@@ -1,0 +1,20 @@
+# settings!
+
+[credentials]
+bot_token = 'TOKEN'
+
+[bot_info]
+id = ''
+is_bot = 0 #0 if false, 1 if true
+first_name = ''
+last_name = ''
+username = ''
+language_code =''
+
+[owner]
+owner_id = ''
+
+[settings]
+chat_id_bind = [
+    ]
+welcome_message = 'hello! i am bot!'
