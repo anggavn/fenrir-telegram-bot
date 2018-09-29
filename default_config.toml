@@ -2,6 +2,9 @@
 
 [credentials]
 bot_token = 'TOKEN'
+db_name = ''
+db_uname = ''
+db_pass = ''
 
 [bot_info]
 id = ''
@@ -17,4 +20,6 @@ owner_id = ''
 [settings]
 chat_id_bind = [
     ]
+chat_id_ban = [
+]
 welcome_message = 'hello! i am bot!'
