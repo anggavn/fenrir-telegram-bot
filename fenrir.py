@@ -39,7 +39,6 @@ class Config(object):
 
 logging.basicConfig(level=logging.INFO)
 
-
 #startup
 os.system('cls' if os.name == 'nt' else 'clear')    #clear screen
 print('// Starting bot. Please wait. . .')
@@ -273,11 +272,14 @@ class CMD_handler:
             SQL = '''INSERT INTO tguser
                         (id, is_bot, first_name, last_name,
                          username, language_code)
-                     SELECT %s, %s, %s, %s, %s, %s
-                     WHERE 
-                        NOT EXISTS (
-                            SELECT id FROM tguser WHERE id = %s
-                        );'''
+                     VALUES (%s, %s, %s, %s, %s, %s)
+                     ON CONFLICT (id) DO UPDATE 
+                        SET is_bot = %s,
+                            first_name = %s,
+                            last_name = %s,
+                            username = %s,
+                            language_code = %s
+                     ;'''
 
             userid = message.from_user.id
             is_bot = message.from_user.is_bot
@@ -295,7 +297,7 @@ class CMD_handler:
             print('user.lang  :', language_code)
             print('>>>>>>>>>>>>>>>>>>>> DBADD END <<<<<<<<<<<<<<<<<<<<\n')
 
-            db_curs.execute(SQL, (userid, is_bot, first_name, last_name, username, language_code, userid))
+            db_curs.execute(SQL, (userid, is_bot, first_name, last_name, username, language_code, is_bot, first_name, last_name, username, language_code))
             db_conn.commit()
 
             # await CMD_handler.whatisthis(message)
