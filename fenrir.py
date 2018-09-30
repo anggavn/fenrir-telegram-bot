@@ -29,6 +29,9 @@ class Config(object):
             self.db_uname = cf['credentials']['db_uname']
             self.db_pass = cf['credentials']['db_pass']
 
+            #load bot profile data
+            self.bot_username = cf['bot_info']['username']
+
             #load bot owner
             self.bot_owner = cf['owner']['owner_id']
 
@@ -58,96 +61,6 @@ fenrir_disp = Dispatcher(fenrir, storage=storage)
 
 # bot_info = @fenrir_disp.get_me()
 # print(bot_info)
-
-
-
-# @fenrir_disp.message_handler(commands=['start'])
-# async def cmd_start(message: types.Message):
-#     await message.reply("[COMMAND 'START' INVOKED]")
-
-# @fenrir_disp.message_handler(commands=['get_me'])
-# async def cmd_get_me(message: types.Message):
-#     bot_info = await fenrir.get_me()
-#     print(bot_info)
-#     await message.reply(bot_info)
-
-# @fenrir_disp.message_handler(commands=['echo'])
-# async def cmd_echo(message: types.Message):
-#     print(message.is_command())
-#     print(message.get_args())
-#     await fenrir.send_message(message.chat.id, message.text)
-#     # await fenrir.send_message(message.get_args())
-
-# @fenrir_disp.message_handler()
-# @fenrir_disp.edited_message_handler()
-# async def msg_edited(message: types.Message):
-#     await fenrir.send_message(message.chat.id, message.text)
-
-# @fenrir_disp.message_handler()
-# async def rep_ugay(message: types.Message):
-#     # txt = message.text.lower()
-#     # sdr = message.from_user.id
-#     # print(sdr)
-#     # rgx = "^(you|you\'re|ur|youre|your)\ (gay|homo)$"
-
-#     # if re.match(rgx, txt) is not None:
-#     #     await message.reply("no u")
-#     # if 334174254 == sdr or 404176080 == sdr:
-#     #     await message.reply("sloot")
-#     print(str(message.chat.id) + ":" + message.from_user.username + ":" + str(message.from_user.id))
-
-# @fenrir_disp.message_handler()
-# async def rep_summoncobalt(message: types.Message):
-#     txt = message.text.lower()
-#     sdr = message.from_user.id
-#     cht = message.chat.id
-#     rgx = "(h[ae]?[iy]|hell[ou])\b"
-
-#     if 404176080 == sdr:
-#         rsn = ": Antares"
-#     else:
-#         rsn = ""
-
-#     # if re.match(rgx, txt) is not None and 363491550 == sdr and -1001097802932 == cht:
-#     if re.match(rgx, txt) is not None and 404176080 == sdr and 404176080 == cht:
-#         await message.reply("how to summon Cobalt" + rsn)
-
-    # try:
-    #     await fenrir_disp.throttle('flood', rate=2)
-    # except exceptions.Throttled:
-    #     await message.reply('throttled')
-    # else:
-    #     await message.reply('unthrottled')
-
-# @fenrir_disp.message_handler(commands=['e6'])
-# async def cmd_invokee6(message:types.Message):
-#     await fenrir.send_message(message.chat.id, "/random husky")
-
-# @fenrir_disp.message_handler(commands=['flood'])
-# async def cmd_flood(message: types.Message):
-#     try:
-#         await fenrir_disp.throttle('flood', rate=2)
-#     except exceptions.Throttled:
-#         await message.reply('throttled')
-#     else:
-#         await message.reply('unthrottled')
-
-# @fenrir_disp.message_handler()
-# async def cmd_msg(message: types.Message):
-#     # print(message.message_id)
-#     # print('')
-#     # print(message.from_user.id)
-#     # print(message.from_user.is_bot)
-#     print(message.from_user.first_name)
-#     # print(message.from_user.last_name)
-#     # print(message.from_user.username)
-#     # print(message.from_user.language_code)
-#     # print('')
-#     # print(message.date)
-#     # print(message.chat)
-#     # print(message.text)
-#     if(message.is_command()):
-#         print(message.get_command()[1:])
 
 
 def admin_only(func):
@@ -408,13 +321,22 @@ async def cmd_msg(message: types.Message):
     if message.chat.id not in config.bot_bind:
         return
     if(message.is_command()):
-        display_info_cmd(message)
-        command = message.get_command()[1:]
-        await getattr(CMD_handler, command)(message)
-        # try:
-        #     await getattr(CMD_handler, command)(message)
-        # except:
-        #     pass
+        command = message.get_command()[1:].lower()
+        if(command.find('@') == -1):
+            is_forbot = True
+        elif(command[command.find('@')+1:] == config.bot_username.lower()):
+            is_forbot = True
+            command = command[0:command.find('@')]
+        else:
+            is_forbot = False
+
+        if(is_forbot):
+            display_info_cmd(message)
+            await getattr(CMD_handler, command)(message)
+            # try:
+            #     await getattr(CMD_handler, command)(message)
+            # except:
+            #     pass
     else:
         display_info_msg(message)
         txt = message.text.lower()
