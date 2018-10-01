@@ -182,21 +182,20 @@ class CMD_handler:
     @group_only
     @admin_only
     async def getlink(message: types.Message):
-        if message.chat.type == 'supergroup':
-            chatlink = await message.chat.get_url()
-            invokerid = message.from_user.id
-            # chatlink = await message.chat.get_url()
-            await message.reply('Link is sent.')
-            await fenrir.send_message(invokerid, chatlink)
+        chatlink = await message.chat.get_url()
+        if chatlink == None:
+            chatlink = await message.chat.export_invite_link()
+        invokerid = message.from_user.id
+        await message.reply('Order received. Check your PM.')
+        await fenrir.send_message(invokerid, message.chat.title + ': ' + chatlink)
 
     @group_only
     @admin_only
     async def genlink(message: types.Message):
-            chatlink = await message.chat.export_invite_link()
-            invokerid = message.from_user.id
-            # chatlink = await message.chat.get_url()
-            await message.reply('Link is sent.')
-            await fenrir.send_message(invokerid, chatlink)
+        chatlink = await message.chat.export_invite_link()
+        invokerid = message.from_user.id
+        await message.reply('Order received. Check your PM.')
+        await fenrir.send_message(invokerid, message.chat.title + ': ' + chatlink)
 
     async def getuserinfofromdb(message: types.Message):
         SQL = 'SELECT * FROM tguser WHERE id = %s'
