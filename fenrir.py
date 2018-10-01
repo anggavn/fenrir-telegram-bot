@@ -87,11 +87,11 @@ def admin_only(func):
         chatadmins = await message.chat.get_administrators()
         if isadmin(invoker, chatadmins):
             await func(message)
-            print('isadmin')
+            # print('isadmin')
             #tell that an admin thing is performed
             pass
         else:
-            print('notadmin')
+            # print('notadmin')
             #tell that an admin thing is denied
             pass
 
@@ -104,11 +104,11 @@ def owner_only(func):
         ownerid = config.bot_owner
         if invokerid == ownerid:
             await func(message)
-            print('isowner')
+            # print('isowner')
             #tell that an admin thing is performed
             pass
         else:
-            print('notowner')
+            # print('notowner')
             #tell that an admin thing is denied
             pass
 
@@ -119,11 +119,11 @@ def group_only(func):
     async def wrapper(message: types.Message):
         if message.chat.type in ['group', 'supergroup']:
             await func(message)
-            print('isgroup')
+            # print('isgroup')
             #tell that an admin thing is performed
             pass
         else:
-            print('notgroup')
+            # print('notgroup')
             #tell that an admin thing is denied
             pass
 
@@ -134,11 +134,11 @@ def supergroup_only(func):
     async def wrapper(message: types.Message):
         if message.chat.type == 'supergroup':
             await func(message)
-            print('isgroup')
+            # print('isgroup')
             #tell that an admin thing is performed
             pass
         else:
-            print('notgroup')
+            # print('notgroup')
             #tell that an admin thing is denied
             pass
 
@@ -160,8 +160,8 @@ class CMD_handler:
         # print(f'[CMD] {message.from_user.first_name} in pass: {message.text}')
         await message.delete()
 
-    @owner_only
-    @admin_only
+    # @owner_only
+    # @admin_only
     async def membercount(message: types.Message):
         membercount = await message.chat.get_members_count()
         await message.reply(f'There are {membercount} members here.')
@@ -197,15 +197,15 @@ class CMD_handler:
         await message.reply('Order received. Check your PM.')
         await fenrir.send_message(invokerid, message.chat.title + ': ' + chatlink)
 
-    async def getuserinfofromdb(message: types.Message):
-        SQL = 'SELECT * FROM tguser WHERE id = %s'
-        userid = int(float(message.get_args()))
-        db_curs.execute(SQL, (userid,))
-        user = db_curs.fetchone()
-        display_user_from_db(user)
+    # async def getuserinfofromdb(message: types.Message):
+    #     SQL = 'SELECT * FROM tguser WHERE id = %s'
+    #     userid = int(float(message.get_args()))
+    #     db_curs.execute(SQL, (userid,))
+    #     user = db_curs.fetchone()
+    #     display_user_from_db(user)
 
     @owner_only
-    async def addtodb(message_ori: types.Message):
+    async def addusertodb(message_ori: types.Message):
         if message_ori.from_user.id == 404176080:
             message = message_ori.reply_to_message
 
@@ -247,6 +247,7 @@ class CMD_handler:
         print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
         display_info_msg(message.reply_to_message)
 
+    @owner_only
     async def saygoodnight(message: types.Message):
         if message.from_user.id == 404176080:
             await fenrir.send_message(message.chat.id, "Goodnight, everyone!")
@@ -343,7 +344,7 @@ def display_user_from_db(user):
 
 
 @fenrir_disp.message_handler()
-async def cmd_msg(message: types.Message):
+async def cmd_msg_handler(message: types.Message):
     # if message.chat.id in config.bot_ban:
     #     return
     if message.chat.id not in config.bot_bind:
