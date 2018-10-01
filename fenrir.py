@@ -341,9 +341,32 @@ def display_user_from_db(user):
     print('user.lang  :', user[5])
     print('>>>>>>>>>>>>>>>>>>>>   USR END <<<<<<<<<<<<<<<<<<<<\n')
 
+def display_info_photo(message: types.Message):
+    print('>>>>>>>>>>>>>>>>>>>> PHT START <<<<<<<<<<<<<<<<<<<<')
+    print('msg_id:', message.message_id)
+    print('')
+    print('msg.fromuser.id    :', message.from_user.id)
+    print('msg.fromuser.isbot :', message.from_user.is_bot)
+    print('msg.fromuser.first :', message.from_user.first_name)
+    print('msg.fromuser.last  :', message.from_user.last_name)
+    print('msg.fromuser.uname :', message.from_user.username)
+    print('msg.fromuser.lang  :', message.from_user.language_code)
+    print('')
+    print('msg.chat.id       :', message.chat.id)              #integer
+    print('msg.chat.type     :', message.chat.type)          #string
+    print('msg.chat.title    :', message.chat.title)        #chat title
+    print('msg.chat.username :', message.chat.username)  #chat username
+    for pht in message.photo:
+        print('')
+        print('pht.id       :', pht.file_id)     #string
+        print('pht.width    :', pht.width)    #integer
+        print('pht.height   :', pht.height)  #integer
+        print('pht.filesize :', pht.file_size)     #integer
+    print('>>>>>>>>>>>>>>>>>>>>   PHT END <<<<<<<<<<<<<<<<<<<<\n')
 
-@fenrir_disp.message_handler()
-async def cmd_msg(message: types.Message):
+
+@fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
+async def cmd_msg_handler(message: types.Message):
     # if message.chat.id in config.bot_ban:
     #     return
     if message.chat.id not in config.bot_bind:
@@ -374,6 +397,33 @@ async def cmd_msg(message: types.Message):
         #     await getattr(MSG_handler, txt)
         # except:
         #     pass
+
+@fenrir_disp.message_handler(content_types = types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
+async def photo_handler(message: types.Message):
+    display_info_photo(message)
+
+@group_only
+@fenrir_disp.message_handler(content_types = types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
+async def greeter_handler(message: types.Message):
+    new_chat_users = message.new_chat_members
+    # if message.chat.id == -254633737: #group testing
+    if new_chat_users != []:
+        new_chat_usernames = ''
+        newct = 0
+        for new_chat_user in new_chat_users:
+            # if not new_chat_user.is_bot:
+                new_chat_usernames = new_chat_usernames + ' @' + new_chat_user.username
+                newct = newct + 1
+        if new_chat_usernames != '':
+            welcome_text = f'Hi there, {new_chat_usernames}! Welcome to {message.chat.title}.\nEnjoy your stay';
+            await fenrir.send_message(message.chat.id, welcome_text)
+
+    left_chat_user = message.left_chat_member
+    # if message.chat.id == -254633737:   #group testing
+    if left_chat_user != None:
+        goodbye_text = f'So long, @{left_chat_user.username}! We\'ll probably miss you!'
+        await fenrir.send_message(message.chat.id, goodbye_text)
+
 
 
 
