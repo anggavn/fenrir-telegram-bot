@@ -197,6 +197,29 @@ class CMD_handler:
         await message.reply('Order received. Check your PM.')
         await fenrir.send_message(invokerid, message.chat.title + ': ' + chatlink)
 
+    async def callme(message: types.Message):
+        userid = message.from_user.id
+        callme_name = message.get_args()
+
+        SQL = '''INSERT INTO callme
+                        (userid, name)
+                     VALUES (%s, %s)
+                     ON CONFLICT (userid) DO UPDATE 
+                        SET name = %s
+                     ;'''
+        db_curs.execute(SQL, (userid, callme_name, callme_name))
+        db_conn.commit()
+        print('>>>>>>>>>>>>>>>>>>>> CALLMEADD <<<<<<<<<<<<<<<<<<<<')
+        print('user.id    :', userid)
+        print('user.first :', message.from_user.first_name)
+        print('user.uname :', message.from_user.username)
+        print('user.callme:', callme_name)
+        print('>>>>>>>>>>>>>>>>>> CALLME ADD END <<<<<<<<<<<<<<<<<\n')
+
+        await message.reply('Alright! I will now call you ' + callme_name + '!')
+
+
+
     async def getuserinfofromdb(message: types.Message):
         SQL = 'SELECT * FROM tguser WHERE id = %s'
         userid = int(float(message.get_args()))
