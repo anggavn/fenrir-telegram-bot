@@ -15,7 +15,8 @@ from aiogram.utils import executor
 import psycopg2
 import pytoml as toml
 
-
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
 
 class Config(object):
     def __init__(self, config_filename):
@@ -29,9 +30,6 @@ class Config(object):
             self.db_uname = cf['credentials']['db_uname']
             self.db_pass = cf['credentials']['db_pass']
 
-            #load bot profile data
-            self.bot_username = cf['bot_info']['username']
-
             #load bot owner
             self.bot_owner = cf['owner']['owner_id']
 
@@ -39,28 +37,42 @@ class Config(object):
             self.bot_bind = cf['settings']['chat_id_bind']
             self.bot_ban = cf['settings']['chat_id_ban']
 
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
 
 logging.basicConfig(level=logging.INFO)
 
-#startup
 os.system('cls' if os.name == 'nt' else 'clear')    #clear screen
 print('// Starting bot. Please wait. . .')
 
 config = Config('config.toml')  #load config
-
-
 loop = asyncio.get_event_loop()
 storage = MemoryStorage()
-fenrir = Bot(token=config.bot_token, loop=loop)
 # try:
 #     fenrir = Bot(token=config.bot_token, validate_token=true)
 #     # if fails, raises: aiogram.utils.exceptions.ValidationError
 # except exceptions.ValidationError:
 #     pass
+fenrir = Bot(token=config.bot_token, loop=loop)
 fenrir_disp = Dispatcher(fenrir, storage=storage)
 
-# bot_info = @fenrir_disp.get_me()
-# print(bot_info)
+#load bot profile data
+get_bot_info = loop.create_task(fenrir.get_me())
+bot_user = loop.run_until_complete(get_bot_info)
+fenrir_id = bot_user.id
+fenrir_is_bot = bot_user.is_bot
+fenrir_first_name = bot_user.first_name
+fenrir_last_name = bot_user.last_name
+fenrir_username = bot_user.username
+fenrir_language_code = bot_user.language_code
+
+
+db_conn = psycopg2.connect(dbname=config.db_name, user=config.db_uname, password=config.db_pass)
+db_curs = db_conn.cursor()
+
+
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
 
 
 def admin_only(func):
@@ -85,6 +97,7 @@ def admin_only(func):
 
     return wrapper
 
+
 def owner_only(func):
     async def wrapper(message: types.Message):
         invokerid = message.from_user.id
@@ -101,6 +114,7 @@ def owner_only(func):
 
     return wrapper
 
+
 def group_only(func):
     async def wrapper(message: types.Message):
         if message.chat.type in ['group', 'supergroup']:
@@ -115,6 +129,7 @@ def group_only(func):
 
     return wrapper
 
+
 def supergroup_only(func):
     async def wrapper(message: types.Message):
         if message.chat.type == 'supergroup':
@@ -128,6 +143,7 @@ def supergroup_only(func):
             pass
 
     return wrapper
+
 
 
 class CMD_handler:
@@ -164,11 +180,23 @@ class CMD_handler:
         await message.reply(reply + admins)
 
     @group_only
+    @admin_only
     async def getlink(message: types.Message):
         if message.chat.type == 'supergroup':
-            # chatlink = await message.chat.export_invite_link()
             chatlink = await message.chat.get_url()
-            await message.reply(chatlink)
+            invokerid = message.from_user.id
+            # chatlink = await message.chat.get_url()
+            await message.reply('Link is sent.')
+            await fenrir.send_message(invokerid, chatlink)
+
+    @group_only
+    @admin_only
+    async def genlink(message: types.Message):
+            chatlink = await message.chat.export_invite_link()
+            invokerid = message.from_user.id
+            # chatlink = await message.chat.get_url()
+            await message.reply('Link is sent.')
+            await fenrir.send_message(invokerid, chatlink)
 
     async def getuserinfofromdb(message: types.Message):
         SQL = 'SELECT * FROM tguser WHERE id = %s'
@@ -314,6 +342,7 @@ def display_user_from_db(user):
     print('user.lang  :', user[5])
     print('>>>>>>>>>>>>>>>>>>>>   USR END <<<<<<<<<<<<<<<<<<<<\n')
 
+
 @fenrir_disp.message_handler()
 async def cmd_msg(message: types.Message):
     # if message.chat.id in config.bot_ban:
@@ -324,7 +353,7 @@ async def cmd_msg(message: types.Message):
         command = message.get_command()[1:].lower()
         if(command.find('@') == -1):
             is_forbot = True
-        elif(command[command.find('@')+1:] == config.bot_username.lower()):
+        elif(command[command.find('@')+1:] ==  fenrir_username.lower()):
             is_forbot = True
             command = command[0:command.find('@')]
         else:
@@ -349,8 +378,11 @@ async def cmd_msg(message: types.Message):
 
 
 
-db_conn = psycopg2.connect(dbname=config.db_name, user=config.db_uname, password=config.db_pass)
-db_curs = db_conn.cursor()
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
+
+
 if __name__ == '__main__':
     executor.start_polling(fenrir_disp, loop=loop)
 

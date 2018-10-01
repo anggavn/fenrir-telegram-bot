@@ -6,14 +6,6 @@ db_name = ''
 db_uname = ''
 db_pass = ''
 
-[bot_info]
-id = ''
-is_bot = 0 #0 if false, 1 if true
-first_name = ''
-last_name = ''
-username = ''
-language_code =''
-
 [owner]
 owner_id = ''
 
