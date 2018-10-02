@@ -345,10 +345,10 @@ def display_user_from_db(user):
 
 @fenrir_disp.message_handler()
 async def cmd_msg_handler(message: types.Message):
-    # if message.chat.id in config.bot_ban:
-    #     return
-    if message.chat.id not in config.bot_bind:
+    if message.chat.id in config.bot_ban:
         return
+    # if message.chat.id not in config.bot_bind:
+    #     return
     if(message.is_command()):
         command = message.get_command()[1:].lower()
         if(command.find('@') == -1):
