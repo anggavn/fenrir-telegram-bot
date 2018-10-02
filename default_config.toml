@@ -10,6 +10,7 @@ db_pass = ''
 owner_id = ''
 
 [settings]
+chat_id_mode = 'ban'    #'ban' or 'bind'
 chat_id_bind = [
     ]
 chat_id_ban = [

@@ -34,6 +34,10 @@ class Config(object):
             self.bot_owner = cf['owner']['owner_id']
 
             #load bind and ban list
+            try:
+                self.bot_mode = cf['settings']['chat_id_mode']
+            except:
+                self.bot_mode = None
             self.bot_bind = cf['settings']['chat_id_bind']
             self.bot_ban = cf['settings']['chat_id_ban']
 
@@ -345,10 +349,12 @@ def display_user_from_db(user):
 
 @fenrir_disp.message_handler()
 async def cmd_msg_handler(message: types.Message):
-    if message.chat.id in config.bot_ban:
-        return
-    # if message.chat.id not in config.bot_bind:
-    #     return
+    if config.bot_mode == 'bind':
+        pass
+    else:
+        if message.chat.id in config.bot_ban:
+            return
+
     if(message.is_command()):
         command = message.get_command()[1:].lower()
         if(command.find('@') == -1):
