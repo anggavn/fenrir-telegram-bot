@@ -225,6 +225,27 @@ class CMD_handler:
 
         await fenrir.send_message(groupid , 'Welcome message successfully changed!')
 
+    @group_only
+    @admin_only
+    async def setgoodbye(message: types.Message):
+        if message.reply_to_message == None:
+            goodbye_text = message.get_args()
+        else:
+            goodbye_text = message.reply_to_message.text
+        groupid  = message.chat.id
+
+        SQL = '''INSERT INTO grouprec
+                    (groupid, goodbyemsg)
+                 VALUES (%s, %s)
+                 ON CONFLICT (groupid) DO UPDATE 
+                    SET goodbyemsg = %s
+                 ;'''
+
+        db_curs.execute(SQL, (groupid , goodbye_text, goodbye_text ))
+        db_conn.commit()
+        
+        await fenrir.send_message(groupid , 'Farewell message successfully changed!')
+
     @owner_only
     async def addusertodb(message_ori: types.Message):
         if message_ori.from_user.id == 404176080:
