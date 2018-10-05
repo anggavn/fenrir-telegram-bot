@@ -32,7 +32,6 @@ class Config(object):
             cf = toml.load(config_file)
             ocf = toml.load(ori_config_file)
 
-                #TODO handle out of date
             onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
             if ocf['fenrir_version'] != onlinecf['fenrir_version']:
                 print('// FENRIR v{} available!'.format(onlinecf['fenrir_version']))            

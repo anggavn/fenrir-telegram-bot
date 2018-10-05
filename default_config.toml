@@ -2,7 +2,6 @@
 fenrir_version = '1.00'
 db_version = '1.00'
 
-
 [credentials]
 bot_token = 'TOKEN'
 db_name = ''
