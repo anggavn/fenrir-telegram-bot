@@ -424,16 +424,6 @@ class MSG_handler(object):
         self.message = message
 
     async def owo(message:types.Message):
-        # if message.from_user.id == 278199718:
-        #     await message.reply('Shut up trash')
-        # elif message.from_user.id == 334174254:
-        #     await message.reply('Shut up slut')
-        # elif message.from_user.id == config.bot_owner:
-        #     await message.reply('UwU nyaaa owner!')
-        # else:
-        #     await message.reply('What\'s this?')
-
-
         userid = message.from_user.id
         SQL = '''SELECT reply FROM oworep
                     WHERE
@@ -520,6 +510,9 @@ def display_info_photo(message: types.Message):
     print('msg.chat.type     :', message.chat.type)          #string
     print('msg.chat.title    :', message.chat.title)        #chat title
     print('msg.chat.username :', message.chat.username)  #chat username
+    print('')
+    print('msg.date   :', message.date)
+    print('msg.caption:', message.caption)
     for pht in message.photo:
         print('')
         print('pht.id       :', pht.file_id)     #string
@@ -554,7 +547,7 @@ async def cmd_msg_handler(message: types.Message):
             #     await getattr(CMD_handler, command)(message)
             # except:
             #     pass
-    else:
+    else:       #not command
         display_info_msg(message)
         txt = message.text.lower()
         await getattr(MSG_handler, txt)(message)
@@ -567,6 +560,9 @@ async def cmd_msg_handler(message: types.Message):
 @fenrir_disp.message_handler(content_types = types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
     display_info_photo(message)
+    if message.text == None:
+        message.text = message.caption
+    await cmd_msg_handler(message)
 
 @group_only
 @fenrir_disp.message_handler(content_types = types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
