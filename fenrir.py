@@ -32,9 +32,6 @@ class Config(object):
             cf = toml.load(config_file)
             ocf = toml.load(ori_config_file)
 
-            onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
-            if ocf['fenrir_version'] != onlinecf['fenrir_version']:
-                print('// FENRIR v{} available!'.format(onlinecf['fenrir_version']))            
 
             if cf['fenrir_version'] != ocf['fenrir_version']:
                 config_file.seek(0)
@@ -51,9 +48,13 @@ class Config(object):
                     lineidx = lineidx + 1
                 with open(config_filename, 'w') as new_config_file:
                     new_config_file.write('\n'.join(ncf))
-                    print('// FENRIR v{} *NEWLY UPDATED*'.format(cf['fenrir_version']))
+                    print('// FENRIR v{} *NEWLY UPDATED*'.format(ocf['fenrir_version']))
             else:
                 print('// FENRIR v{}'.format(cf['fenrir_version']))
+            
+            onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
+            if ocf['fenrir_version'] != onlinecf['fenrir_version']:
+                print('// FENRIR v{} is available!'.format(onlinecf['fenrir_version']))            
 
             #load credentials
             self.bot_token = cf['credentials']['bot_token']
