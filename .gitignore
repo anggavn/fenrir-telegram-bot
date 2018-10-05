@@ -104,4 +104,5 @@ ENV/
 fenrirTG_venv/
 config.toml
 future_features.txt
-
+*.sublime*
+*.bak

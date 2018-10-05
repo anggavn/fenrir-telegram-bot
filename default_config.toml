@@ -1,4 +1,6 @@
 # settings!
+fenrir_version = '1.00'
+db_version = '1.00'
 
 [credentials]
 bot_token = 'TOKEN'
@@ -10,6 +12,7 @@ db_pass = ''
 owner_id = ''
 
 [settings]
+chat_id_mode = 'ban'    #'ban' or 'bind'
 chat_id_bind = [
     ]
 chat_id_ban = [

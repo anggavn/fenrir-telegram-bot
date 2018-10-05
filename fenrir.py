@@ -5,6 +5,8 @@ import logging
 import os
 import random
 import re   #regex
+import requests
+from shutil import copy
 
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -18,34 +20,157 @@ import pytoml as toml
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
 
+
 class Config(object):
-    def __init__(self, config_filename):
+    def __init__(self, config_filename, ori_config_filename):
         self.config_filename = config_filename
 
-        with open(config_filename, 'r') as config_file:
+        with open(config_filename, 'r') as config_file, \
+             open(ori_config_filename, 'r') as ori_config_file:
+            copy(config_filename, config_filename + '.bak')
+            config_file.seek(0)
             cf = toml.load(config_file)
+            ocf = toml.load(ori_config_file)
+
+            onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
+            if ocf['fenrir_version'] != onlinecf['fenrir_version']:
+                print('// FENRIR v{} available!'.format(onlinecf['fenrir_version']))            
+
+            if cf['fenrir_version'] != ocf['fenrir_version']:
+                config_file.seek(0)
+                ncf = config_file.read().splitlines()
+                lineidx = 0
+                for line in ncf:
+                    if ncf[lineidx].find('fenrir_version') != -1:
+                        cmtidx = ncf[lineidx].find('#')  #preserving comments
+                        if cmtidx != -1:
+                            comment = ncf[lineidx][cmtidx:]
+                        else:
+                            comment = ''
+                        ncf[lineidx] = toml.dumps({'fenrir_version': ocf['fenrir_version']})[0:-1] + '    ' + comment
+                    lineidx = lineidx + 1
+                with open(config_filename, 'w') as new_config_file:
+                    new_config_file.write('\n'.join(ncf))
+                    print('// FENRIR v{} *NEWLY UPDATED*'.format(cf['fenrir_version']))
+            else:
+                print('// FENRIR v{}'.format(cf['fenrir_version']))
+
             #load credentials
             self.bot_token = cf['credentials']['bot_token']
             self.db_name = cf['credentials']['db_name']
             self.db_uname = cf['credentials']['db_uname']
             self.db_pass = cf['credentials']['db_pass']
 
+            #initialise database
+            self.db_conn = psycopg2.connect(dbname = self.db_name, \
+                                            user = self.db_uname, \
+                                            password = self.db_pass)
+            self.db_curs = self.db_conn.cursor()
+            if cf['db_version'] != ocf['db_version']:
+                print('// NOTICE: DB out of date')
+                print('//         client version is ' + cf['db_version'])
+                print('//         latest version is ' + ocf['db_version'])
+                print('// updating database . . .')
+                self.build_database()
+                config_file.seek(0)
+                ncf = config_file.read().splitlines()
+                lineidx = 0
+                for line in ncf:
+                    if ncf[lineidx].find('db_version') != -1:
+                        cmtidx = ncf[lineidx].find('#')  #preserving comments
+                        if cmtidx != -1:
+                            comment = ncf[lineidx][cmtidx:]
+                        else:
+                            comment = ''
+                        ncf[lineidx] = toml.dumps({'db_version': ocf['db_version']})[0:-1] + '    ' + comment
+                    lineidx = lineidx + 1
+                with open(config_filename, 'w') as new_config_file:
+                    new_config_file.write('\n'.join(ncf))
+                print('// update success!')
+
             #load bot owner
             self.bot_owner = cf['owner']['owner_id']
 
             #load bind and ban list
+            try:
+                self.bot_mode = cf['settings']['chat_id_mode']
+            except:
+                self.bot_mode = None
             self.bot_bind = cf['settings']['chat_id_bind']
             self.bot_ban = cf['settings']['chat_id_ban']
 
+    def build_database(self):
+        SQL = '''CREATE TABLE IF NOT EXISTS tguser(
+                 id integer primary key)
+                 ;'''
+        self.db_curs.execute(SQL)
+        SQL = '''ALTER TABLE tguser
+                 ADD COLUMN IF NOT EXISTS is_bot boolean not null,
+                 ADD COLUMN IF NOT EXISTS first_name text,
+                 ADD COLUMN IF NOT EXISTS last_name text,
+                 ADD COLUMN IF NOT EXISTS username text,
+                 ADD COLUMN IF NOT EXISTS language_code text
+                 ;'''
+        self.db_curs.execute(SQL)
+
+        SQL = '''CREATE TABLE IF NOT EXISTS tggroup(
+                 id bigint primary key)
+                 ;'''
+        self.db_curs.execute(SQL)
+        SQL = '''ALTER TABLE tggroup
+                 ADD COLUMN IF NOT EXISTS type text not null,
+                 ADD COLUMN IF NOT EXISTS title text,
+                 ADD COLUMN IF NOT EXISTS username text,
+                 ADD COLUMN IF NOT EXISTS allmemberadmin boolean
+                 ;'''
+        self.db_curs.execute(SQL)
+
+        SQL = '''CREATE TABLE IF NOT EXISTS oworep(
+                 replyid serial)
+                 ;'''
+        self.db_curs.execute(SQL)
+        SQL = '''ALTER TABLE oworep
+                 ADD COLUMN IF NOT EXISTS foruserid integer not null,
+                 ADD COLUMN IF NOT EXISTS reply text not null
+                 ;'''
+        self.db_curs.execute(SQL)
+
+        SQL = '''CREATE TABLE IF NOT EXISTS callme(
+                 userid integer,
+                 name text)
+                 ;'''
+        self.db_curs.execute(SQL)
+        SQL = '''ALTER TABLE callme
+                 ADD COLUMN IF NOT EXISTS name text not null
+                 ;'''
+        self.db_curs.execute(SQL)
+
+        SQL = '''CREATE TABLE IF NOT EXISTS grouprec(
+                 groupid bigint primary key)
+                 ;'''
+        self.db_curs.execute(SQL)
+        SQL = '''ALTER TABLE grouprec
+                 ADD COLUMN IF NOT EXISTS welcomemsg text,
+                 ADD COLUMN IF NOT EXISTS goodbyemsg text,
+                 ADD COLUMN IF NOT EXISTS rules text
+                 ;'''
+        self.db_curs.execute(SQL)
+
+        self.db_conn.commit()
+
+
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
+
 
 logging.basicConfig(level=logging.INFO)
 
 os.system('cls' if os.name == 'nt' else 'clear')    #clear screen
 print('// Starting bot. Please wait. . .')
 
-config = Config('config.toml')  #load config
+config = Config('config.toml', 'default_config.toml')  #load config
+db_conn = config.db_conn
+db_curs = config.db_curs
 loop = asyncio.get_event_loop()
 storage = MemoryStorage()
 # try:
@@ -65,10 +190,6 @@ fenrir_first_name = bot_user.first_name
 fenrir_last_name = bot_user.last_name
 fenrir_username = bot_user.username
 fenrir_language_code = bot_user.language_code
-
-
-db_conn = psycopg2.connect(dbname=config.db_name, user=config.db_uname, password=config.db_pass)
-db_curs = db_conn.cursor()
 
 
 #////////////////////////////////////////////////#
@@ -408,13 +529,14 @@ def display_info_photo(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   PHT END <<<<<<<<<<<<<<<<<<<<\n')
 
 
-
-@fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
+@fenrir_disp.message_handler()
 async def cmd_msg_handler(message: types.Message):
-    # if message.chat.id in config.bot_ban:
-    #     return
-    if message.chat.id not in config.bot_bind:
-        return
+    if config.bot_mode == 'bind':
+        pass
+    else:
+        if message.chat.id in config.bot_ban:
+            return
+
     if(message.is_command()):
         command = message.get_command()[1:].lower()
         if(command.find('@') == -1):
