@@ -169,11 +169,13 @@ logging.basicConfig(level=logging.INFO)
 os.system('cls' if os.name == 'nt' else 'clear')    #clear screen
 print('// Starting bot. Please wait. . .')
 
-config = Config('config.toml', 'default_config.toml')  #load config
+config = Config(config_filename='config.toml', \
+                ori_config_filename='default_config.toml')  #load config
 db_conn = config.db_conn
 db_curs = config.db_curs
 loop = asyncio.get_event_loop()
 storage = MemoryStorage()
+#TODO check for default config
 # try:
 #     fenrir = Bot(token=config.bot_token, validate_token=true)
 #     # if fails, raises: aiogram.utils.exceptions.ValidationError
@@ -210,11 +212,10 @@ def admin_only(func):
         if isadmin(invoker, chatadmins):
             await func(message)
             # print('isadmin')
-            #tell that an admin thing is performed
-            pass
+            #TODO tell that an admin thing is performed
         else:
             # print('notadmin')
-            #tell that an admin thing is denied
+            #TODO tell that an admin thing is denied
             pass
 
     return wrapper
@@ -227,11 +228,10 @@ def owner_only(func):
         if invokerid == ownerid:
             await func(message)
             # print('isowner')
-            #tell that an admin thing is performed
-            pass
+            #TODO tell that an admin thing is performed
         else:
             # print('notowner')
-            #tell that an admin thing is denied
+            #TODO tell that an admin thing is denied
             pass
 
     return wrapper
@@ -242,11 +242,10 @@ def group_only(func):
         if message.chat.type in ['group', 'supergroup']:
             await func(message)
             # print('isgroup')
-            #tell that an admin thing is performed
-            pass
+            #TODO tell that an admin thing is performed
         else:
             # print('notgroup')
-            #tell that an admin thing is denied
+            #TODO tell that an admin thing is denied
             pass
 
     return wrapper
