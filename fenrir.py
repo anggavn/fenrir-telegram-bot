@@ -310,7 +310,6 @@ class CMD_handler:
 
     async def rate(message: types.Message):
         if message.photo != []:
-            print('there is photo')
             seedid = 'AgADAQAD_qcxG2G8uEVSeeAqUIVdOKBrDDAABEm6IDw5N0wAAZaWAgABAg'
             seedhash = 0
             for achr in seedid:
@@ -325,9 +324,6 @@ class CMD_handler:
             percentage = min(abs((hashtotal-seedhash)/(maxhash-seedhash)), abs((maxhash-seedhash)/(abs(hashtotal-seedhash)+1)))
 
             await message.reply('This is {0:.0%} gay'.format(percentage))
-            print(percentage)
-        else:
-            print('there is no photo')
 
     #////////////////////////////////////////////#
     #>>>>>>>>>>>>>> GROUP MANAGEMENT <<<<<<<<<<<<#
@@ -583,11 +579,18 @@ async def cmd_msg_handler(message: types.Message):
 
         if(is_forbot):
             display_info_cmd(message)
-            await getattr(CMD_handler, command)(message)
-            # try:
-            #     await getattr(CMD_handler, command)(message)
-            # except:
-            #     pass
+            if message.reply_to_message.photo != []:
+                print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
+                display_info_photo(message.reply_to_message)
+                message.message_id = message.reply_to_message.message_id
+                message.photo = message.reply_to_message.photo
+                await getattr(CMD_handler, command)(message)
+            else:
+                await getattr(CMD_handler, command)(message)
+                # try:
+                #     await getattr(CMD_handler, command)(message)
+                # except:
+                #     pass
     else:       #not command
         display_info_msg(message)
         txt = message.text.lower()
