@@ -529,7 +529,7 @@ def display_info_photo(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   PHT END <<<<<<<<<<<<<<<<<<<<\n')
 
 
-@fenrir_disp.message_handler()
+@fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
 async def cmd_msg_handler(message: types.Message):
     if config.bot_mode == 'bind':
         pass
@@ -577,19 +577,62 @@ async def greeter_handler(message: types.Message):
         new_chat_usernames = ''
         newct = 0
         for new_chat_user in new_chat_users:
-            # if not new_chat_user.is_bot:
+            if not new_chat_user.is_bot:
                 new_chat_usernames = new_chat_usernames + ' @' + new_chat_user.username
                 newct = newct + 1
         if new_chat_usernames != '':
-            welcome_text = f'Hi there, {new_chat_usernames}! Welcome to {message.chat.title}.\nEnjoy your stay';
-            await fenrir.send_message(message.chat.id, welcome_text)
+            try:
+                SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
+                groupid = message.chat.id
+                db_curs.execute(SQL, (groupid,))
+                welcome_text = db_curs.fetchone()[0].replace('\\n', '\n')
+            except:
+                welcome_text = repr('Hi there, {new_members}! Welcome to {group_title}.\nEnjoy your stay')
+            await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title))
 
     left_chat_user = message.left_chat_member
     # if message.chat.id == -254633737:   #group testing
     if left_chat_user != None:
-        goodbye_text = f'So long, @{left_chat_user.username}! We\'ll probably miss you!'
-        await fenrir.send_message(message.chat.id, goodbye_text)
+        try:
+            SQL = 'SELECT goodbyemsg FROM grouprec WHERE groupid = %s'
+            groupid = message.chat.id
+            db_curs.execute(SQL, (groupid,))
+            goodbye_text = db_curs.fetchone()[0].replace('\\n', '\n')
+        except:
+            goodbye_text = repr('So long, {left_member}! We\'ll probably miss you!')
+        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + left_chat_user.username, group_title=message.chat.title, chat_title=message.chat.title))
 
+# @group_only
+# @fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
+# async def greeter_handler_tester(message:types.Message):
+#     new_chat_users = []
+#     new_chat_users.append(message.from_user)
+#     # if message.chat.id == -254633737: #group testing
+#     if new_chat_users != []:
+#         new_chat_usernames = ''
+#         newct = 0
+#         for new_chat_user in new_chat_users:
+#             # if not new_chat_user.is_bot:
+#                 new_chat_usernames = new_chat_usernames + ' @' + new_chat_user.username
+#                 newct = newct + 1
+#         if new_chat_usernames != '':
+#             # welcome_text = f'Hi there, {new_chat_usernames}! Welcome to {message.chat.title}.\nEnjoy your stay';
+#             SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
+#             groupid = message.chat.id
+#             db_curs.execute(SQL, (groupid,))
+#             welcome_text = db_curs.fetchone()[0].replace('\\n', '\n')
+#             await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title))
+
+#     left_chat_user = message.from_user
+#     # if message.chat.id == -254633737:   #group testing
+#     if left_chat_user != None:
+#         # goodbye_text = f'So long, @{left_chat_user.username}! We\'ll probably miss you!'
+#         # await fenrir.send_message(message.chat.id, goodbye_text)
+#         SQL = 'SELECT goodbyemsg FROM grouprec WHERE groupid = %s'
+#         groupid = message.chat.id
+#         db_curs.execute(SQL, (groupid,))
+#         goodbye_text = db_curs.fetchone()[0].replace('\\n', '\n')
+#         await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + left_chat_user.username, group_title=message.chat.title, chat_title=message.chat.title))
 
 
 
