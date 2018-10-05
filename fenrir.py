@@ -273,6 +273,10 @@ class CMD_handler:
         super(CMD_handler, self).__init__()
         self.message = message
         
+    #////////////////////////////////////////////#
+    #>>>>>>>>>>>>>> GENERAL TESTING  <<<<<<<<<<<<#
+    #////////////////////////////////////////////#
+
     async def echo(message: types.Message):
         # print(f'[CMD] {message.from_user.first_name} in pass: {message.text}')
         await message.reply(message.text)
@@ -280,6 +284,10 @@ class CMD_handler:
     async def deleteme(message: types.Message):
         # print(f'[CMD] {message.from_user.first_name} in pass: {message.text}')
         await message.delete()
+
+    #////////////////////////////////////////////#
+    #>>>>>>>>>>>>>> GROUP GENERAL    <<<<<<<<<<<<#
+    #////////////////////////////////////////////#
 
     # @owner_only
     # @admin_only
@@ -299,6 +307,31 @@ class CMD_handler:
 
         reply = 'The ' + ('admin' if adminct==1 else 'admins') + ' of this chat ' + ('is' if adminct==1 else 'are')
         await message.reply(reply + admins)
+
+    async def rate(message: types.Message):
+        if message.photo != []:
+            print('there is photo')
+            seedid = 'AgADAQAD_qcxG2G8uEVSeeAqUIVdOKBrDDAABEm6IDw5N0wAAZaWAgABAg'
+            seedhash = 0
+            for achr in seedid:
+                seedhash = seedhash + ord(achr)
+            maxid = 'AgADAQAD-6cxG2G8uEWMG2fwmO6Cpr8j9y8ABE4xLP6rt9wAAWljBAABAg'
+            maxhash = 0
+            for achr in maxid:
+                maxhash = maxhash + ord(achr)
+            hashtotal = 0
+            for achr in message.photo[0].file_id:
+                hashtotal = hashtotal + ord(achr)
+            percentage = min(abs((hashtotal-seedhash)/(maxhash-seedhash)), abs((maxhash-seedhash)/(abs(hashtotal-seedhash)+1)))
+
+            await message.reply('This is {0:.0%} gay'.format(percentage))
+            print(percentage)
+        else:
+            print('there is no photo')
+
+    #////////////////////////////////////////////#
+    #>>>>>>>>>>>>>> GROUP MANAGEMENT <<<<<<<<<<<<#
+    #////////////////////////////////////////////#
 
     @group_only
     @admin_only
@@ -367,6 +400,10 @@ class CMD_handler:
         
         await fenrir.send_message(groupid , 'Farewell message successfully changed!')
 
+    #////////////////////////////////////////////#
+    #>>>>>>>>>>>>>> DEV ONLY         <<<<<<<<<<<<#
+    #////////////////////////////////////////////#
+
     @owner_only
     async def addusertodb(message_ori: types.Message):
         if message_ori.from_user.id == 404176080:
@@ -404,6 +441,10 @@ class CMD_handler:
             db_conn.commit()
 
             # await CMD_handler.whatisthis(message)
+
+
+
+
 
 
     async def whatisthis(message: types.Message):
@@ -560,9 +601,9 @@ async def cmd_msg_handler(message: types.Message):
 @fenrir_disp.message_handler(content_types = types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
     display_info_photo(message)
-    if message.text == None:
+    if message.caption != None:
         message.text = message.caption
-    await cmd_msg_handler(message)
+        await cmd_msg_handler(message)
 
 @group_only
 @fenrir_disp.message_handler(content_types = types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
