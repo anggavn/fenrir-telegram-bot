@@ -266,6 +266,9 @@ def supergroup_only(func):
     return wrapper
 
 
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
 
 class CMD_handler:
     """docstring for CMD_handler"""
@@ -307,6 +310,17 @@ class CMD_handler:
 
         reply = 'The ' + ('admin' if adminct==1 else 'admins') + ' of this chat ' + ('is' if adminct==1 else 'are')
         await message.reply(reply + admins)
+
+    @group_only
+    async def rules(message:types.Message):
+        try:
+            SQL = 'SELECT rules FROM grouprec WHERE groupid = %s'
+            groupid = message.chat.id
+            db_curs.execute(SQL, (groupid,))
+            rules_text = db_curs.fetchone()[0].replace('\\n', '\n')
+        except:
+            rules_text = repr('There is no law in {group_title}.\nThis is a free for all PvP zone.\nGood luck')
+        await fenrir.send_message(message.chat.id, rules_text.format(group_title=message.chat.title, chat_title=message.chat.title))
 
     async def rate(message: types.Message):
         if message.photo != []:
@@ -395,6 +409,27 @@ class CMD_handler:
         db_conn.commit()
         
         await fenrir.send_message(groupid , 'Farewell message successfully changed!')
+
+    @group_only
+    @admin_only
+    async def setrules(message: types.Message):
+        if message.reply_to_message == None:
+            rules_text = message.get_args()
+        else:
+            rules_text = message.reply_to_message.text
+        groupid  = message.chat.id
+
+        SQL = '''INSERT INTO grouprec
+                    (groupid, rules)
+                 VALUES (%s, %s)
+                 ON CONFLICT (groupid) DO UPDATE 
+                    SET rules = %s
+                 ;'''
+
+        db_curs.execute(SQL, (groupid , rules_text, rules_text ))
+        db_conn.commit()
+        
+        await fenrir.send_message(groupid , 'Rules successfully changed!')
 
     #////////////////////////////////////////////#
     #>>>>>>>>>>>>>> DEV ONLY         <<<<<<<<<<<<#
@@ -579,7 +614,7 @@ async def cmd_msg_handler(message: types.Message):
 
         if(is_forbot):
             display_info_cmd(message)
-            if message.reply_to_message.photo != []:
+            if message.reply_to_message != None and message.reply_to_message.photo != []:
                 print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
                 display_info_photo(message.reply_to_message)
                 message.message_id = message.reply_to_message.message_id
