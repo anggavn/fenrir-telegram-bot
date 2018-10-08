@@ -335,7 +335,7 @@ class CMD_handler:
             hashtotal = 0
             for achr in message.photo[0].file_id:
                 hashtotal = hashtotal + ord(achr)
-            percentage = min(abs((hashtotal-seedhash)/(maxhash-seedhash)), abs((maxhash-seedhash)/(abs(hashtotal-seedhash)+1)))
+            percentage = 1-min(abs((hashtotal-seedhash)/(maxhash-seedhash)), abs((maxhash-seedhash)/(abs(hashtotal-seedhash)+1)))
 
             await message.reply('This is {0:.0%} gay'.format(percentage))
 
@@ -430,6 +430,21 @@ class CMD_handler:
         db_conn.commit()
         
         await fenrir.send_message(groupid , 'Rules successfully changed!')
+
+    @group_only
+    @admin_only
+    async def pin(message: types.Message):
+        if message.reply_to_message != None:
+            if message.get_args().lower() == 'silent':
+                await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id, disable_notification = True)
+            else:
+                await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id)
+
+    @group_only
+    @admin_only
+    async def unpin(message:types.Message):
+        await fenrir.unpin_chat_message(message.chat.id)
+
 
     #////////////////////////////////////////////#
     #>>>>>>>>>>>>>> DEV ONLY         <<<<<<<<<<<<#
