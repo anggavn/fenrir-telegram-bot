@@ -17,6 +17,7 @@ from aiogram.utils import executor
 import psycopg2
 import pytoml as toml
 
+
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
 
@@ -488,11 +489,25 @@ class CMD_handler:
 
             # await CMD_handler.whatisthis(message)
 
+    @owner_only
+    async def addoworeply(message:types.Message):
+        if message.reply_to_message == None:
+            return
 
+        for_user = message.reply_to_message.from_user
+        reply = message.get_args()
 
+        SQL = '''INSERT INTO oworep
+                    (foruserid, reply)
+                 VALUES (%s, %s)
+                 ;'''
 
+        db_curs.execute(SQL, (for_user.id , reply, ))
+        db_conn.commit()
 
+        await message.reply(f'Reply added for @{for_user.username}!')
 
+    @owner_only
     async def whatisthis(message: types.Message):
         print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
         display_info_msg(message.reply_to_message)
