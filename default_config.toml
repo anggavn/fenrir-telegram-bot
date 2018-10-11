@@ -1,5 +1,5 @@
 # settings!
-fenrir_version = '1.04'
+fenrir_version = '1.05'
 db_version = '1.00'
 
 [credentials]

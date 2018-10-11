@@ -677,7 +677,6 @@ async def photo_handler(message: types.Message):
 @fenrir_disp.message_handler(content_types = types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
 async def greeter_handler(message: types.Message):
     new_chat_users = message.new_chat_members
-    # if message.chat.id == -254633737: #group testing
     if new_chat_users != []:
         new_chat_usernames = ''
         newct = 0
@@ -696,7 +695,6 @@ async def greeter_handler(message: types.Message):
             await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title))
 
     left_chat_user = message.left_chat_member
-    # if message.chat.id == -254633737:   #group testing
     if left_chat_user != None:
         try:
             SQL = 'SELECT goodbyemsg FROM grouprec WHERE groupid = %s'
@@ -705,7 +703,7 @@ async def greeter_handler(message: types.Message):
             goodbye_text = db_curs.fetchone()[0].replace('\\n', '\n')
         except:
             goodbye_text = repr('So long, {left_member}! We\'ll probably miss you!')
-        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + left_chat_user.username, group_title=message.chat.title, chat_title=message.chat.title))
+        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + (left_chat_user.username if left_chat_user.username != None else left_chat_user.first_name), group_title=message.chat.title, chat_title=message.chat.title))
 
 # @group_only
 # @fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
