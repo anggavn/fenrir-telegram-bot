@@ -411,6 +411,19 @@ class CMD_handler:
         
         await fenrir.send_message(groupid , 'Farewell message successfully changed!')
 
+    async def testgreetings(message:types.Message):
+        SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
+        groupid = message.chat.id
+        db_curs.execute(SQL, (groupid,))
+        welcome_text = db_curs.fetchone()[0].replace('\\n', '\n')
+        await fenrir.send_message(message.chat.id, welcome_text.format(new_members='@' + message.from_user.username, group_title=message.chat.title, chat_title=message.chat.title))
+
+        SQL = 'SELECT goodbyemsg FROM grouprec WHERE groupid = %s'
+        groupid = message.chat.id
+        db_curs.execute(SQL, (groupid,))
+        goodbye_text = db_curs.fetchone()[0].replace('\\n', '\n')
+        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + message.from_user.username, group_title=message.chat.title, chat_title=message.chat.title))
+
     @group_only
     @admin_only
     async def setrules(message: types.Message):
