@@ -411,6 +411,8 @@ class CMD_handler:
         
         await fenrir.send_message(groupid , 'Farewell message successfully changed!')
 
+    @group_only
+    @admin_only
     async def testgreetings(message:types.Message):
         SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
         groupid = message.chat.id
