@@ -11,6 +11,8 @@ from shutil import copy
 from aiogram import Bot, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
+# from aiogram.dispatcher import FSMContext
+# from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import exceptions
 from aiogram.utils import executor
 
@@ -160,6 +162,11 @@ class Config(object):
 
         self.db_conn.commit()
 
+# States
+# class Form(StatesGroup):
+#     name = State()  # Will be represented in storage as 'Form:name'
+#     age = State()  # Will be represented in storage as 'Form:age'
+#     gender = State() # Will be represented in storage as 'Form:gender'
 
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
@@ -461,6 +468,12 @@ class CMD_handler:
     async def unpin(message:types.Message):
         await fenrir.unpin_chat_message(message.chat.id)
 
+    @group_only
+    @admin_only
+    async def purge(message:types.Message):
+        # TODO delete messages like a few before
+        pass
+
 
     #////////////////////////////////////////////#
     #>>>>>>>>>>>>>> DEV ONLY         <<<<<<<<<<<<#
@@ -531,6 +544,13 @@ class CMD_handler:
     async def saygoodnight(message: types.Message):
         if message.from_user.id == 404176080:
             await fenrir.send_message(message.chat.id, "Goodnight, everyone!")
+
+    # @owner_only
+    # async def teststorage(message:types.Message):
+    #     # Set state
+    #     await Form.name.set()
+    #     print(Form.name);
+    #     await message.reply("Hi there! What's your name?")
 
 
 
