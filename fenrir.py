@@ -236,7 +236,7 @@ def owner_only(func):
     async def wrapper(message: types.Message):
         invokerid = message.from_user.id
         ownerid = config.bot_owner
-        if invokerid == ownerid:
+        if invokerid in ownerid:
             await func(message)
             # print('isowner')
             #TODO tell that an admin thing is performed

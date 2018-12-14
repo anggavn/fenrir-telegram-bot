@@ -1,0 +1,4 @@
+aiogram
+Pillow
+psycopg2
+pytoml
