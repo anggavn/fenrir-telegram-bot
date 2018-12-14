@@ -1,6 +1,8 @@
 import asyncio
+import datetime
 # import uvloop
 # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+from io import BytesIO
 import logging
 import os
 import random
@@ -16,13 +18,14 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.utils import exceptions
 from aiogram.utils import executor
 
+from PIL import Image, ImageDraw, ImageFont
+
 import psycopg2
 import pytoml as toml
 
 
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
-
 
 class Config(object):
     def __init__(self, config_filename, ori_config_filename):
@@ -544,6 +547,84 @@ class CMD_handler:
     async def saygoodnight(message: types.Message):
         if message.from_user.id == 404176080:
             await fenrir.send_message(message.chat.id, "Goodnight, everyone!")
+
+    @owner_only
+    async def genticket(message: types.Message):
+        im = Image.open('citation/awoo.png')
+        draw = ImageDraw.Draw(im)
+        ocr_font = ImageFont.truetype('citation/ocr_a_std.ttf', 22)
+        # vcr_font_sml = ImageFont.truetype('citation/vcr_osd_mono.ttf', 18)
+        vcr_font_big = ImageFont.truetype('citation/vcr_osd_mono.ttf', 60)
+
+        guide_text = 'The format for submitting a citation is:\n/genticket [cit. type]#[offender]#[AAIN]#[viol. location]#[viol. checkmarks]#[viol. note]#[cit. amount]'
+
+        cit_info = message.get_args().split('#')
+        if len(cit_info) != 7:
+            await message.reply(guide_text)
+            return
+
+        cit_type = cit_info[0].strip()
+        cit_type_loc = (round(im.size[0]/2), 360)
+        if cit_type == '1':
+            cit_type_text = 'NOTICE'
+        elif cit_type == '2':
+            cit_type_text = 'WARNING'
+        else:
+            cit_type_text = 'VIOLATION'
+
+        w, h = draw.textsize(cit_type_text, font=vcr_font_big)
+        cit_type_loc = (round(cit_type_loc[0]-w/2), round(cit_type_loc[1]-h/2))
+        draw.text(cit_type_loc, cit_type_text, fill='white', font=vcr_font_big)
+
+        ifblk_x = 187
+        ifblk_y_height = draw.textsize('0', font=ocr_font)[1]
+        ifblk_y_start = round(442-ifblk_y_height/2)
+        ifblk_y_offset = 24
+        cit_no = '{:010d}'.format(random.randint(0, 9999999999))
+        iss_date = datetime.date.today().isoformat()
+        iss_time = datetime.datetime.now().time().isoformat()[0:5]
+        draw.text((ifblk_x, ifblk_y_start), cit_no, fill='black', font=ocr_font)
+        draw.text((ifblk_x, ifblk_y_start+1*ifblk_y_offset), iss_date, fill='black', font=ocr_font)
+        draw.text((ifblk_x, ifblk_y_start+2*ifblk_y_offset), iss_time, fill='black', font=ocr_font)
+        
+        off_name = cit_info[1].upper()
+        off_aain = cit_info[2].upper()
+        location = cit_info[3].upper()
+        draw.text((ifblk_x, ifblk_y_start+4*ifblk_y_offset), off_name, fill='black', font=ocr_font)
+        draw.text((ifblk_x, ifblk_y_start+5*ifblk_y_offset), off_aain, fill='black', font=ocr_font)
+        draw.text((ifblk_x, ifblk_y_start+6*ifblk_y_offset), location, fill='black', font=ocr_font)
+
+        vtype = cit_info[4].strip()
+        viol_extr = cit_info[5].upper()
+        vtype_x = 25
+        vtype_y_start = 656
+        vtype_y_offset = 23
+        vtype_markersize = draw.textsize('X', font=ocr_font)
+        vtype_x = round(vtype_x-vtype_markersize[0]/2)
+        vtype_y_start = round(vtype_y_start-vtype_markersize[1]/2)
+        for viol in vtype:
+            if viol == '1':
+                draw.text((vtype_x, vtype_y_start+0*vtype_y_offset), 'X', fill='black', font=ocr_font)
+            elif viol == '2':
+                draw.text((vtype_x, vtype_y_start+1*vtype_y_offset), 'X', fill='black', font=ocr_font)
+            elif viol == '3':
+                draw.text((vtype_x, vtype_y_start+2*vtype_y_offset), 'X', fill='black', font=ocr_font)
+            elif viol == '4':
+                draw.text((vtype_x, vtype_y_start+4*vtype_y_offset), 'X', fill='black', font=ocr_font)
+            else:
+                draw.text((vtype_x, vtype_y_start+6*vtype_y_offset), 'X', fill='black', font=ocr_font)
+                draw.text((vtype_x+27, round(vtype_y_start+6*vtype_y_offset)), viol_extr, fill='black', font=ocr_font)
+
+        fine = cit_info[6]
+        fine_x = 210
+        fine_y = 854-draw.textsize('X', font=ocr_font)[1]
+        draw.text((fine_x, fine_y), fine, fill='black', font=ocr_font)
+
+        bio = BytesIO()
+        bio.name = 'ticket.png'
+        im.save(bio, 'PNG')
+        bio.seek(0)
+        await fenrir.send_document(message.chat.id, document=bio)
 
     # @owner_only
     # async def teststorage(message:types.Message):
