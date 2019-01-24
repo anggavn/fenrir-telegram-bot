@@ -97,6 +97,12 @@ class Config(object):
 
             #load bot owner
             self.bot_owner = cf['owner']['owner_id']
+            try:
+                for foo in self.bot_owner:
+                    pass
+            except:
+                #TODO change the config from int to list
+                pass
 
             #load bind and ban list
             try:
