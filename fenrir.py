@@ -311,6 +311,7 @@ class CMD_handler:
 
     # @owner_only
     # @admin_only
+    @group_only
     async def membercount(message: types.Message):
         membercount = await message.chat.get_members_count()
         await message.reply(f'There are {membercount} members here.')
@@ -778,6 +779,8 @@ async def cmd_msg_handler(message: types.Message):
                 #     await getattr(CMD_handler, command)(message)
                 # except:
                 #     pass
+    elif(re.match(r'.*@admin .*?', message.text)):  #calling admin
+        #TODO pm admin
     else:       #not command
         display_info_msg(message)
         txt = message.text.lower()
