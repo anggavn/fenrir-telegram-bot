@@ -330,6 +330,32 @@ class CMD_handler:
         await message.reply(reply + admins)
 
     @group_only
+    async def admin_ping(message:types.Message):
+        #TODO ping admins of a group
+        #TODO make relevant database
+        #TODO prevent duplicate reports
+        # group_id = message.chat.id
+        # invoker = message.from_user
+
+        group_name = message.chat.title
+        chat_link = await message.chat.get_url()
+        if message.reply_to_message != None:
+            problem_id = message.reply_to_message.message_id
+        else:
+            problem_id = message.message_id
+
+        await message.reply(f'The admins have been notified with a report number #FNRPT{problem_id}')
+
+        chatadmins = await message.chat.get_administrators()
+        admins = ''
+        adminct = 0
+        for admin in chatadmins:
+            if not admin.user.is_bot:
+                msg = f'Member of [{group_name}]({chat_link}) pinged @admin. Report number is #FNRPT{problem_id}'
+                await fenrir.send_message(admin.user.id, msg, parse_mode='Markdown')
+        pass
+
+    @group_only
     async def rules(message:types.Message):
         try:
             SQL = 'SELECT rules FROM grouprec WHERE groupid = %s'
@@ -483,6 +509,8 @@ class CMD_handler:
     async def purge(message:types.Message):
         # TODO delete messages like a few before
         pass
+
+
 
 
     #////////////////////////////////////////////#
@@ -779,8 +807,12 @@ async def cmd_msg_handler(message: types.Message):
                 #     await getattr(CMD_handler, command)(message)
                 # except:
                 #     pass
-    elif(re.match(r'.*@admin .*?', message.text)):  #calling admin
+
+    elif(re.match(r'(\W|\A)@admin\b', message.text, re.I)):  #calling admin
+        display_info_msg(message)
+        await getattr(CMD_handler, 'admin_ping')(message)
         #TODO pm admin
+
     else:       #not command
         display_info_msg(message)
         txt = message.text.lower()
