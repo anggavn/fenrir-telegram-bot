@@ -338,6 +338,7 @@ class CMD_handler:
         # invoker = message.from_user
 
         group_name = message.chat.title
+        
         chat_link = await message.chat.get_url()
         if message.reply_to_message != None:
             problem_id = message.reply_to_message.message_id
@@ -351,8 +352,9 @@ class CMD_handler:
         adminct = 0
         for admin in chatadmins:
             if not admin.user.is_bot:
-                msg = f'Member of [{group_name}]({chat_link}) pinged @admin. Report number is #FNRPT{problem_id}'
-                await fenrir.send_message(admin.user.id, msg, parse_mode='Markdown')
+                msg = f'Member of <a href="{chat_link}">{group_name}</a> pinged @admin. Report number is #FNRPT{problem_id}'
+                print(msg)
+                await fenrir.send_message(admin.user.id, msg, parse_mode='HTML')
         pass
 
     @group_only
