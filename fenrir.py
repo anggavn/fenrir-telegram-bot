@@ -839,7 +839,10 @@ async def greeter_handler(message: types.Message):
         newct = 0
         for new_chat_user in new_chat_users:
             if not new_chat_user.is_bot:
-                new_chat_usernames = new_chat_usernames + ' @' + new_chat_user.username
+                if new_chat_user.username != '':
+                    new_chat_usernames = new_chat_usernames + ' @' + new_chat_user.username
+                else:
+                    new_chat_usernames = new_chat_usernames + '[' + new_chat_user.first_name + '](' + new_chat_user.id + ')'
                 newct = newct + 1
         if new_chat_usernames != '':
             try:
@@ -849,7 +852,7 @@ async def greeter_handler(message: types.Message):
                 welcome_text = db_curs.fetchone()[0].replace('\\n', '\n')
             except:
                 welcome_text = repr('Hi there, {new_members}! Welcome to {group_title}.\nEnjoy your stay')
-            await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title))
+            await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title), parse_mode='Markdown')
 
     left_chat_user = message.left_chat_member
     if left_chat_user != None:
