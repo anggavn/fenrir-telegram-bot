@@ -107,3 +107,4 @@ future_features.txt
 *.sublime*
 *.bak
 atr_img.png
+dev.py
