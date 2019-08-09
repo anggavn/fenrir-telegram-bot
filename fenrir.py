@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""FENRIR
+hello there
+"""
+
 import asyncio
 import datetime
 # import uvloop
@@ -7,7 +12,6 @@ import logging
 import os
 import random
 import re   #regex
-import requests
 from shutil import copy
 
 from aiogram import Bot, types
@@ -23,11 +27,19 @@ from PIL import Image, ImageDraw, ImageFont
 import psycopg2
 import pytoml as toml
 
+import requests
 
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
 
-class Config(object):
+class Config():
+    """[TODO summary of class]
+
+    [TODO longer class information]
+
+    attr:
+        [TODO insert attributes]
+    """
     def __init__(self, config_filename, ori_config_filename):
         self.config_filename = config_filename
 
@@ -57,21 +69,22 @@ class Config(object):
                     print('// FENRIR v{} *NEWLY UPDATED*'.format(ocf['fenrir_version']))
             else:
                 print('// FENRIR v{}'.format(cf['fenrir_version']))
-            
+
             onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
             if ocf['fenrir_version'] != onlinecf['fenrir_version']:
-                print('// FENRIR v{} is available!'.format(onlinecf['fenrir_version']))            
+                print('// FENRIR v{} is available!'.format(onlinecf['fenrir_version']))
 
             #load credentials
             self.bot_token = cf['credentials']['bot_token']
             self.db_name = cf['credentials']['db_name']
             self.db_uname = cf['credentials']['db_uname']
+
             self.db_pass = cf['credentials']['db_pass']
 
             #initialise database
-            self.db_conn = psycopg2.connect(dbname = self.db_name, \
-                                            user = self.db_uname, \
-                                            password = self.db_pass)
+            self.db_conn = psycopg2.connect(dbname=self.db_name, \
+                                            user=self.db_uname, \
+                                            password=self.db_pass)
             self.db_curs = self.db_conn.cursor()
             if cf['db_version'] != ocf['db_version']:
                 print('// NOTICE: DB out of date')
@@ -217,6 +230,12 @@ fenrir_language_code = bot_user.language_code
 
 
 def admin_only(func):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     def isadmin(invoker, chatadmins):
         adminids = []
         for admin in chatadmins:
@@ -239,6 +258,12 @@ def admin_only(func):
 
 
 def owner_only(func):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     async def wrapper(message: types.Message):
         invokerid = message.from_user.id
         ownerid = config.bot_owner
@@ -255,6 +280,12 @@ def owner_only(func):
 
 
 def group_only(func):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     async def wrapper(message: types.Message):
         if message.chat.type in ['group', 'supergroup']:
             await func(message)
@@ -269,6 +300,12 @@ def group_only(func):
 
 
 def supergroup_only(func):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     async def wrapper(message: types.Message):
         if message.chat.type == 'supergroup':
             await func(message)
@@ -288,11 +325,17 @@ def supergroup_only(func):
 
 
 class CMD_handler:
-    """docstring for CMD_handler"""
+    """[TODO summary of class]
+
+    [TODO longer class information]
+
+    attr:
+        [TODO insert attributes]
+    """
     def __init__(self, message: types.Message):
         super(CMD_handler, self).__init__()
         self.message = message
-        
+
     #////////////////////////////////////////////#
     #>>>>>>>>>>>>>> GENERAL TESTING  <<<<<<<<<<<<#
     #////////////////////////////////////////////#
@@ -326,11 +369,11 @@ class CMD_handler:
                 admins = admins + ' @' + admin.user.username
                 adminct = adminct + 1
 
-        reply = 'The ' + ('admin' if adminct==1 else 'admins') + ' of this chat ' + ('is' if adminct==1 else 'are')
+        reply = 'The ' + ('admin' if adminct == 1 else 'admins') + ' of this chat ' + ('is' if adminct == 1 else 'are')
         await message.reply(reply + admins)
 
     @group_only
-    async def admin_ping(message:types.Message):
+    async def admin_ping(message: types.Message):
         #TODO ping admins of a group
         #TODO make relevant database
         #TODO prevent duplicate reports
@@ -338,7 +381,7 @@ class CMD_handler:
         # invoker = message.from_user
 
         group_name = message.chat.title
-        
+
         chat_link = await message.chat.get_url()
         if message.reply_to_message != None:
             problem_id = message.reply_to_message.message_id
@@ -358,7 +401,7 @@ class CMD_handler:
         pass
 
     @group_only
-    async def rules(message:types.Message):
+    async def rules(message: types.Message):
         try:
             SQL = 'SELECT rules FROM grouprec WHERE groupid = %s'
             groupid = message.chat.id
@@ -421,7 +464,7 @@ class CMD_handler:
             welcome_text = message.get_args()
         else:
             welcome_text = message.reply_to_message.text
-        groupid  = message.chat.id
+        groupid = message.chat.id
 
         SQL = '''INSERT INTO grouprec
                     (groupid, welcomemsg)
@@ -430,10 +473,10 @@ class CMD_handler:
                     SET welcomemsg = %s
                  ;'''
 
-        db_curs.execute(SQL, (groupid , welcome_text, welcome_text ))
+        db_curs.execute(SQL, (groupid, welcome_text, welcome_text))
         db_conn.commit()
 
-        await fenrir.send_message(groupid , 'Welcome message successfully changed!')
+        await fenrir.send_message(groupid, 'Welcome message successfully changed!')
 
     @group_only
     @admin_only
@@ -442,7 +485,7 @@ class CMD_handler:
             goodbye_text = message.get_args()
         else:
             goodbye_text = message.reply_to_message.text
-        groupid  = message.chat.id
+        groupid = message.chat.id
 
         SQL = '''INSERT INTO grouprec
                     (groupid, goodbyemsg)
@@ -451,14 +494,14 @@ class CMD_handler:
                     SET goodbyemsg = %s
                  ;'''
 
-        db_curs.execute(SQL, (groupid , goodbye_text, goodbye_text ))
+        db_curs.execute(SQL, (groupid, goodbye_text, goodbye_text))
         db_conn.commit()
-        
-        await fenrir.send_message(groupid , 'Farewell message successfully changed!')
+
+        await fenrir.send_message(groupid, 'Farewell message successfully changed!')
 
     @group_only
     @admin_only
-    async def testgreetings(message:types.Message):
+    async def testgreetings(message: types.Message):
         SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
         groupid = message.chat.id
         db_curs.execute(SQL, (groupid,))
@@ -478,7 +521,7 @@ class CMD_handler:
             rules_text = message.get_args()
         else:
             rules_text = message.reply_to_message.text
-        groupid  = message.chat.id
+        groupid = message.chat.id
 
         SQL = '''INSERT INTO grouprec
                     (groupid, rules)
@@ -487,28 +530,28 @@ class CMD_handler:
                     SET rules = %s
                  ;'''
 
-        db_curs.execute(SQL, (groupid , rules_text, rules_text ))
+        db_curs.execute(SQL, (groupid, rules_text, rules_text))
         db_conn.commit()
-        
-        await fenrir.send_message(groupid , 'Rules successfully changed!')
+
+        await fenrir.send_message(groupid, 'Rules successfully changed!')
 
     @group_only
     @admin_only
     async def pin(message: types.Message):
         if message.reply_to_message != None:
             if message.get_args().lower() == 'silent':
-                await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id, disable_notification = True)
+                await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id, disable_notification=True)
             else:
                 await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id)
 
     @group_only
     @admin_only
-    async def unpin(message:types.Message):
+    async def unpin(message: types.Message):
         await fenrir.unpin_chat_message(message.chat.id)
 
     @group_only
     @admin_only
-    async def purge(message:types.Message):
+    async def purge(message: types.Message):
         # TODO delete messages like a few before
         pass
 
@@ -558,7 +601,7 @@ class CMD_handler:
             # await CMD_handler.whatisthis(message)
 
     @owner_only
-    async def addoworeply(message:types.Message):
+    async def addoworeply(message: types.Message):
         if message.reply_to_message == None:
             return
 
@@ -570,7 +613,7 @@ class CMD_handler:
                  VALUES (%s, %s)
                  ;'''
 
-        db_curs.execute(SQL, (for_user.id , reply, ))
+        db_curs.execute(SQL, (for_user.id, reply, ))
         db_conn.commit()
 
         await message.reply(f'Reply added for @{for_user.username}!')
@@ -623,7 +666,7 @@ class CMD_handler:
         draw.text((ifblk_x, ifblk_y_start), cit_no, fill='black', font=ocr_font)
         draw.text((ifblk_x, ifblk_y_start+1*ifblk_y_offset), iss_date, fill='black', font=ocr_font)
         draw.text((ifblk_x, ifblk_y_start+2*ifblk_y_offset), iss_time, fill='black', font=ocr_font)
-        
+
         off_name = cit_info[1].upper()
         off_aain = cit_info[2].upper()
         location = cit_info[3].upper()
@@ -673,12 +716,18 @@ class CMD_handler:
 
 
 class MSG_handler(object):
-    """docstring for MSG_handler"""
+    """[TODO summary of class]
+
+    [TODO longer class information]
+
+    attr:
+        [TODO insert attributes]
+    """
     def __init__(self, message: types.Message):
         super(MSG_handler, self).__init__()
         self.message = message
 
-    async def owo(message:types.Message):
+    async def owo(message: types.Message):
         userid = message.from_user.id
         SQL = '''SELECT reply FROM oworep
                     WHERE
@@ -695,7 +744,7 @@ class MSG_handler(object):
         await message.reply(replies[random.randint(1, len(replies))-1][0])
 
 
-        
+
 def display_info_msg(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>> MSG START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
@@ -777,7 +826,7 @@ def display_info_photo(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   PHT END <<<<<<<<<<<<<<<<<<<<\n')
 
 
-@fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
+@fenrir_disp.message_handler(content_types=types.message.ContentType.TEXT)
 async def cmd_msg_handler(message: types.Message):
     if config.bot_mode == 'bind':
         pass
@@ -785,17 +834,17 @@ async def cmd_msg_handler(message: types.Message):
         if message.chat.id in config.bot_ban:
             return
 
-    if(message.is_command()):
+    if message.is_command():
         command = message.get_command()[1:].lower()
-        if(command.find('@') == -1):
+        if command.find('@') == -1:
             is_forbot = True
-        elif(command[command.find('@')+1:] ==  fenrir_username.lower()):
+        elif command[command.find('@')+1:] == fenrir_username.lower():
             is_forbot = True
             command = command[0:command.find('@')]
         else:
             is_forbot = False
 
-        if(is_forbot):
+        if is_forbot:
             display_info_cmd(message)
             if message.reply_to_message != None and message.reply_to_message.photo != []:
                 print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
@@ -810,7 +859,7 @@ async def cmd_msg_handler(message: types.Message):
                 # except:
                 #     pass
 
-    elif(re.match(r'(\W|\A)@admin\b', message.text, re.I)):  #calling admin
+    elif re.match(r'(\W|\A)@admin\b', message.text, re.I):  #calling admin
         display_info_msg(message)
         await getattr(CMD_handler, 'admin_ping')(message)
         #TODO pm admin
@@ -825,7 +874,7 @@ async def cmd_msg_handler(message: types.Message):
         # except:
         #     pass
 
-@fenrir_disp.message_handler(content_types = types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
+@fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
     display_info_photo(message)
     if message.caption != None:
@@ -833,7 +882,7 @@ async def photo_handler(message: types.Message):
         await cmd_msg_handler(message)
 
 @group_only
-@fenrir_disp.message_handler(content_types = types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
+@fenrir_disp.message_handler(content_types=types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
 async def greeter_handler(message: types.Message):
     new_chat_users = message.new_chat_members
     if new_chat_users != []:
