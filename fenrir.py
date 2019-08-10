@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FENRIR
+"""FENRIR v1.11
 hello there
 """
 
