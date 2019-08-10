@@ -1,8 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.7
 """/// FENRIR v1.12 ///////////////////////////////////////////////////////////
-
-
-
+""/
+"/
+/
+/
+/                                                                            /"
+/                                                                           /""
 ////////////////////////////////////////////////////////////////////////////"""
 
 import asyncio
@@ -366,7 +369,7 @@ class CMD_handler:
     #////////////////////////////////////////////#
 
     async def echo(self, message: types.Message):
-        """[TODO summary of func]
+        """returns back the typed message
         args:
             [TODO insert arguments]
         returns:
@@ -375,7 +378,7 @@ class CMD_handler:
         await message.reply(message.text)
 
     async def deleteme(self, message: types.Message):
-        """[TODO summary of func]
+        """deletes the typed message if bot has permission
         args:
             [TODO insert arguments]
         returns:
@@ -755,7 +758,7 @@ class CMD_handler:
         returns:
             [TODO insert returns]
         """
-        if message.reply_to_message == None:
+        if message.reply_to_message is None:
             return
 
         for_user = message.reply_to_message.from_user
@@ -779,7 +782,7 @@ class CMD_handler:
         returns:
             [TODO insert returns]
         """
-        if message.reply_to_message == None:
+        if message.reply_to_message is None:
             return
 
         for_user = message.reply_to_message.from_user
@@ -803,7 +806,7 @@ class CMD_handler:
         returns:
             [TODO insert returns]
         """
-        if message.reply_to_message == None:
+        if message.reply_to_message is None:
             return
 
         for_user = message.reply_to_message.from_user
@@ -934,7 +937,7 @@ class CMD_handler:
 
 
 
-class MSG_handler(object):
+class MSG_handler():
     """[TODO summary of class]
 
     [TODO longer class information]
@@ -946,7 +949,7 @@ class MSG_handler(object):
         super(MSG_handler, self).__init__()
         self.message = message
 
-    async def owo(message: types.Message):
+    async def owo(self, message: types.Message):
         try:
             await fenrir_disp.throttle('owo', rate=60, user=message.from_user.id, chat=message.chat.id)
         except exceptions.Throttled:
@@ -970,6 +973,12 @@ class MSG_handler(object):
 
 
 def display_info_msg(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     print('>>>>>>>>>>>>>>>>>>>> MSG START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
     print('')
@@ -990,6 +999,12 @@ def display_info_msg(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   MSG END <<<<<<<<<<<<<<<<<<<<\n')
 
 def display_info_cmd(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     print('>>>>>>>>>>>>>>>>>>>> CMD START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
     print('')
@@ -1015,6 +1030,12 @@ def display_info_cmd(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   CMD END <<<<<<<<<<<<<<<<<<<<\n')
 
 def display_user_from_db(user):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     print('>>>>>>>>>>>>>>>>>>>> USR START <<<<<<<<<<<<<<<<<<<<')
     print('user.id    :', user[0])
     print('user.isbot :', user[1])
@@ -1025,6 +1046,12 @@ def display_user_from_db(user):
     print('>>>>>>>>>>>>>>>>>>>>   USR END <<<<<<<<<<<<<<<<<<<<\n')
 
 def display_info_photo(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     print('>>>>>>>>>>>>>>>>>>>> PHT START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
     print('')
@@ -1054,6 +1081,12 @@ def display_info_photo(message: types.Message):
 #text handler
 @fenrir_disp.message_handler(content_types=types.message.ContentType.TEXT)
 async def cmd_msg_handler(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     if config.bot_mode == 'bind':
         pass
     else:
@@ -1072,7 +1105,7 @@ async def cmd_msg_handler(message: types.Message):
 
         if is_forbot:
             display_info_cmd(message)
-            if message.reply_to_message != None and message.reply_to_message.photo != []:
+            if message.reply_to_message is not None and message.reply_to_message.photo != []:
                 print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
                 display_info_photo(message.reply_to_message)
                 message.message_id = message.reply_to_message.message_id
@@ -1094,14 +1127,26 @@ async def cmd_msg_handler(message: types.Message):
 
 @fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO or types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     display_info_photo(message)
-    if message.caption != None:
+    if message.caption is not None:
         message.text = message.caption
         await cmd_msg_handler(message)
 
 @group_only
 @fenrir_disp.message_handler(content_types=types.message.ContentType.NEW_CHAT_MEMBERS or types.message.ContentType.LEFT_CHAT_MEMBER)
 async def greeter_handler(message: types.Message):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
     new_chat_users = message.new_chat_members
     if new_chat_users != []:
         new_chat_usernames = ''
@@ -1124,7 +1169,7 @@ async def greeter_handler(message: types.Message):
             await fenrir.send_message(message.chat.id, welcome_text.format(new_members=new_chat_usernames, group_title=message.chat.title, chat_title=message.chat.title), parse_mode='Markdown')
 
     left_chat_user = message.left_chat_member
-    if left_chat_user != None:
+    if left_chat_user is not None:
         try:
             SQL = 'SELECT goodbyemsg FROM grouprec WHERE groupid = %s'
             groupid = message.chat.id
@@ -1132,7 +1177,7 @@ async def greeter_handler(message: types.Message):
             goodbye_text = db_curs.fetchone()[0].replace('\\n', '\n')
         except:
             goodbye_text = repr('So long, {left_member}! We\'ll probably miss you!')
-        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + (left_chat_user.username if left_chat_user.username != None else left_chat_user.first_name), group_title=message.chat.title, chat_title=message.chat.title))
+        await fenrir.send_message(message.chat.id, goodbye_text.format(left_member='@' + (left_chat_user.username if left_chat_user.username is not None else left_chat_user.first_name), group_title=message.chat.title, chat_title=message.chat.title))
 
 # @group_only
 # @fenrir_disp.message_handler(content_types = types.message.ContentType.TEXT)
