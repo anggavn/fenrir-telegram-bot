@@ -432,8 +432,13 @@ class CMD_handler:
             for admin in chatadmins:
                 if not admin.user.is_bot:
                     msg = f'Member of <a href="{chat_link}">{group_name}</a> pinged @admin. Report number is #FNRPT{problem_id}'
-                    print(msg)
-                    await fenrir.send_message(admin.user.id, msg, parse_mode='HTML')
+                    print(f"sending report to: {admin.user.username}... ", end='')
+                    try:
+                        await fenrir.send_message(admin.user.id, msg, parse_mode='HTML')
+                        print('SUCCESS')
+                    except exceptions.CantInitiateConversation:
+                        print('CANT INITIATE CONVERSATION')
+                        pass
             pass
 
     @group_only
@@ -912,7 +917,7 @@ async def cmd_msg_handler(message: types.Message):
         txt = message.text.lower()
         if hasattr(MSG_handler, txt):
             await getattr(MSG_handler, txt)(message)
-            
+
 
 @fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO or types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
