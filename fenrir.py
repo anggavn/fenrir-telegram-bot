@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""FENRIR v1.11
-hello there
-"""
+"""/// FENRIR v1.11 ///////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////"""
 
 import asyncio
 import datetime
@@ -33,7 +35,7 @@ import requests
 #////////////////////////////////////////////////#
 
 class Config():
-    """[TODO summary of class]
+    """handles configuration files loading and exporting
 
     [TODO longer class information]
 
@@ -767,20 +769,25 @@ class MSG_handler(object):
         self.message = message
 
     async def owo(message: types.Message):
-        userid = message.from_user.id
-        SQL = '''SELECT reply FROM oworep
-                    WHERE
-                     CASE
-                        WHEN %s in (select foruserid from oworep)
-                        THEN foruserid = %s
-                     ELSE
-                        foruserid = 0
-                     END
-              ;'''
+        try:
+            await fenrir_disp.throttle('owo', rate=60, user=message.from_user.id, chat=message.chat.id)
+        except exceptions.Throttled:
+            pass
+        else:
+            userid = message.from_user.id
+            SQL = '''SELECT reply FROM oworep
+                        WHERE
+                         CASE
+                            WHEN %s in (select foruserid from oworep)
+                            THEN foruserid = %s
+                         ELSE
+                            foruserid = 0
+                         END
+                  ;'''
 
-        db_curs.execute(SQL, (userid, userid))
-        replies = db_curs.fetchall()
-        await message.reply(replies[random.randint(1, len(replies))-1][0])
+            db_curs.execute(SQL, (userid, userid))
+            replies = db_curs.fetchall()
+            await message.reply(replies[random.randint(1, len(replies))-1][0])
 
 
 
@@ -788,12 +795,12 @@ def display_info_msg(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>> MSG START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
     print('')
-    print('msg.fromuser.id    :', message.from_user.id)
-    print('msg.fromuser.isbot :', message.from_user.is_bot)
-    print('msg.fromuser.first :', message.from_user.first_name)
-    print('msg.fromuser.last  :', message.from_user.last_name)
-    print('msg.fromuser.uname :', message.from_user.username)
-    print('msg.fromuser.lang  :', message.from_user.language_code)
+    print('msg.from_user.id             :', message.from_user.id)
+    print('msg.from_user.is_bot         :', message.from_user.is_bot)
+    print('msg.from_user.first_name     :', message.from_user.first_name)
+    print('msg.from_user.last_name      :', message.from_user.last_name)
+    print('msg.from_user.username       :', message.from_user.username)
+    print('msg.from_user.language_code  :', message.from_user.language_code)
     print('')
     print('msg.chat.id       :', message.chat.id)              #integer
     print('msg.chat.type     :', message.chat.type)          #string
@@ -808,12 +815,12 @@ def display_info_cmd(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>> CMD START <<<<<<<<<<<<<<<<<<<<')
     print('msg_id:', message.message_id)
     print('')
-    print('msg.fromuser.id    :', message.from_user.id)
-    print('msg.fromuser.isbot :', message.from_user.is_bot)
-    print('msg.fromuser.first :', message.from_user.first_name)
-    print('msg.fromuser.last  :', message.from_user.last_name)
-    print('msg.fromuser.uname :', message.from_user.username)
-    print('msg.fromuser.lang  :', message.from_user.language_code)
+    print('msg.from_user.id             :', message.from_user.id)
+    print('msg.from_user.is_bot         :', message.from_user.is_bot)
+    print('msg.from_user.first_name     :', message.from_user.first_name)
+    print('msg.from_user.last_name      :', message.from_user.last_name)
+    print('msg.from_user.username       :', message.from_user.username)
+    print('msg.from_user.language_code  :', message.from_user.language_code)
     print('')
     print('msg.chat.id       :', message.chat.id)              #integer
     print('msg.chat.type     :', message.chat.type)          #string
@@ -824,6 +831,7 @@ def display_info_cmd(message: types.Message):
     print('msg.cmdarg :', message.get_full_command())
     print('msg.cmd    :', message.get_command())
     print('msg.arg    :', message.get_args())
+    print('')
     print('msg.date:', message.date)
     print('msg.text:', message.text)
     print('>>>>>>>>>>>>>>>>>>>>   CMD END <<<<<<<<<<<<<<<<<<<<\n')
@@ -865,6 +873,7 @@ def display_info_photo(message: types.Message):
     print('>>>>>>>>>>>>>>>>>>>>   PHT END <<<<<<<<<<<<<<<<<<<<\n')
 
 
+#text handler
 @fenrir_disp.message_handler(content_types=types.message.ContentType.TEXT)
 async def cmd_msg_handler(message: types.Message):
     if config.bot_mode == 'bind':
@@ -890,27 +899,20 @@ async def cmd_msg_handler(message: types.Message):
                 display_info_photo(message.reply_to_message)
                 message.message_id = message.reply_to_message.message_id
                 message.photo = message.reply_to_message.photo
-                await getattr(CMD_handler, command)(message)
+                if hasattr(CMD_handler, command):
+                    await getattr(CMD_handler, command)(message)
             else:
-                await getattr(CMD_handler, command)(message)
-                # try:
-                #     await getattr(CMD_handler, command)(message)
-                # except:
-                #     pass
-
+                if hasattr(CMD_handler, command):
+                    await getattr(CMD_handler, command)(message)
     elif re.match(r'(\W|\A)@admin\b', message.text, re.I): #calling admin
         display_info_msg(message)
         await getattr(CMD_handler, 'admin_ping')(message)
-
     else: #not command
         display_info_msg(message)
         txt = message.text.lower()
-        await getattr(MSG_handler, txt)(message)
-        # try:
-        #     txt = message.text.lower()
-        #     await getattr(MSG_handler, txt)
-        # except:
-        #     pass
+        if hasattr(MSG_handler, txt):
+            await getattr(MSG_handler, txt)(message)
+            
 
 @fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO or types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
