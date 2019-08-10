@@ -56,8 +56,7 @@ class Config():
             if cfg['fenrir_version'] != ori_cfg['fenrir_version']:
                 config_file.seek(0)
                 new_cfg = config_file.read().splitlines()
-                lineidx = 0
-                for line in new_cfg:
+                for lineidx, line in enumerate(new_cfg):
                     if new_cfg[lineidx].find('fenrir_version') != -1:
                         cmtidx = new_cfg[lineidx].find('#')  #preserving comments
                         if cmtidx != -1:
@@ -111,12 +110,12 @@ class Config():
 
             #load bot owner
             self.bot_owner = cfg['owner']['owner_id']
-            try:
-                for foo in self.bot_owner:
-                    pass
-            except:
-                #TODO change the config from int to list
-                pass
+            # try:
+            #     for foo in self.bot_owner:
+            #         pass
+            # except:
+            #     #TODO change the config from int to list
+            #     pass
 
             #load bind and ban list
             try:
@@ -338,7 +337,6 @@ def supergroup_only(func):
             await func(message)
             # print('isgroup')
             #tell that an admin thing is performed
-            pass
         else:
             # print('notgroup')
             #tell that an admin thing is denied
@@ -367,12 +365,22 @@ class CMD_handler:
     #>>>>>>>>>>>>>> GENERAL TESTING  <<<<<<<<<<<<#
     #////////////////////////////////////////////#
 
-    async def echo(message: types.Message):
-        # print(f'[CMD] {message.from_user.first_name} in pass: {message.text}')
+    async def echo(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         await message.reply(message.text)
 
-    async def deleteme(message: types.Message):
-        # print(f'[CMD] {message.from_user.first_name} in pass: {message.text}')
+    async def deleteme(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         await message.delete()
 
     #////////////////////////////////////////////#
@@ -382,12 +390,24 @@ class CMD_handler:
     # @owner_only
     # @admin_only
     @group_only
-    async def membercount(message: types.Message):
+    async def membercount(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         membercount = await message.chat.get_members_count()
         await message.reply(f'There are {membercount} members here.')
 
     @group_only
-    async def chatadmins(message: types.Message):
+    async def chatadmins(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         chatadmins = await message.chat.get_administrators()
         admins = ''
         adminct = 0
@@ -400,7 +420,13 @@ class CMD_handler:
         await message.reply(reply + admins)
 
     @group_only
-    async def admin_ping(message: types.Message):
+    async def admin_ping(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         #TODO make relevant database
         #TODO prevent duplicate reports
 
@@ -442,7 +468,13 @@ class CMD_handler:
             pass
 
     @group_only
-    async def rules(message: types.Message):
+    async def rules(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         try:
             SQL = 'SELECT rules FROM grouprec WHERE groupid = %s'
             groupid = message.chat.id
@@ -452,7 +484,13 @@ class CMD_handler:
             rules_text = repr('There is no law in {group_title}.\nThis is a free for all PvP zone.\nGood luck')
         await fenrir.send_message(message.chat.id, rules_text.format(group_title=message.chat.title, chat_title=message.chat.title))
 
-    async def rate(message: types.Message):
+    async def rate(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.photo != []:
             seedid = 'AgADAQAD_qcxG2G8uEVSeeAqUIVdOKBrDDAABEm6IDw5N0wAAZaWAgABAg'
             seedhash = 0
@@ -475,7 +513,13 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def getlink(message: types.Message):
+    async def getlink(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.chat.type == 'private':
             chatlink = f"tg://user?id={message.chat.id}"
         elif message.chat.username:
@@ -490,7 +534,13 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def genlink(message: types.Message):
+    async def genlink(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         chatlink = await message.chat.export_invite_link()
         invokerid = message.from_user.id
         await message.reply('Order received. Check your PM.')
@@ -505,7 +555,15 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def setwelcome(message: types.Message):
+    async def setwelcome(self, message: types.Message):
+        """[TODO summary of func]
+           {new_members}
+           {group_title}
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.reply_to_message == None:
             welcome_text = message.get_args()
         else:
@@ -526,7 +584,14 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def setgoodbye(message: types.Message):
+    async def setgoodbye(self, message: types.Message):
+        """[TODO summary of func]
+           {left_members}
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.reply_to_message == None:
             goodbye_text = message.get_args()
         else:
@@ -547,7 +612,13 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def testgreetings(message: types.Message):
+    async def testgreetings(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         SQL = 'SELECT welcomemsg FROM grouprec WHERE groupid = %s'
         groupid = message.chat.id
         db_curs.execute(SQL, (groupid,))
@@ -562,7 +633,13 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def setrules(message: types.Message):
+    async def setrules(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.reply_to_message == None:
             rules_text = message.get_args()
         else:
@@ -583,7 +660,13 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def pin(message: types.Message):
+    async def pin(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.reply_to_message != None:
             if message.get_args().lower() == 'silent':
                 await fenrir.pin_chat_message(message.chat.id, message.reply_to_message.message_id, disable_notification=True)
@@ -592,12 +675,24 @@ class CMD_handler:
 
     @group_only
     @admin_only
-    async def unpin(message: types.Message):
+    async def unpin(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         await fenrir.unpin_chat_message(message.chat.id)
 
     @group_only
     @admin_only
-    async def purge(message: types.Message):
+    async def purge(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         # TODO delete messages like a few before
         pass
 
@@ -609,7 +704,13 @@ class CMD_handler:
     #////////////////////////////////////////////#
 
     @owner_only
-    async def addusertodb(message_ori: types.Message):
+    async def addusertodb(self, message_ori: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message_ori.from_user.id == 404176080:
             message = message_ori.reply_to_message
 
@@ -647,7 +748,13 @@ class CMD_handler:
             # await CMD_handler.whatisthis(message)
 
     @owner_only
-    async def addoworeply(message: types.Message):
+    async def addoworeply(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.reply_to_message == None:
             return
 
@@ -665,17 +772,83 @@ class CMD_handler:
         await message.reply(f'Reply added for @{for_user.username}!')
 
     @owner_only
-    async def whatisthis(message: types.Message):
+    async def displayoworeply(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
+        if message.reply_to_message == None:
+            return
+
+        for_user = message.reply_to_message.from_user
+        reply = message.get_args()
+
+        # SQL = '''INSERT INTO oworep
+        #             (foruserid, reply)
+        #          VALUES (%s, %s)
+        #          ;'''
+
+        # db_curs.execute(SQL, (for_user.id, reply, ))
+        # db_conn.commit()
+
+        # await message.reply(f'Reply added for @{for_user.username}!')
+
+    @owner_only
+    async def purgeoworeply(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
+        if message.reply_to_message == None:
+            return
+
+        for_user = message.reply_to_message.from_user
+        reply = message.get_args()
+
+        # SQL = '''INSERT INTO oworep
+        #             (foruserid, reply)
+        #          VALUES (%s, %s)
+        #          ;'''
+
+        # db_curs.execute(SQL, (for_user.id, reply, ))
+        # db_conn.commit()
+
+        await message.reply(f'All replies purged for @{for_user.username}!')
+
+    @owner_only
+    async def whatisthis(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         print('>>>>>>>>>>>>>>>>>>>> REPLY MSG <<<<<<<<<<<<<<<<<<<<')
         display_info_msg(message.reply_to_message)
 
     @owner_only
-    async def saygoodnight(message: types.Message):
+    async def saygoodnight(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         if message.from_user.id == 404176080:
             await fenrir.send_message(message.chat.id, "Goodnight, everyone!")
 
     @owner_only
-    async def genticket(message: types.Message):
+    async def genticket(self, message: types.Message):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         im = Image.open('citation/awoo.png')
         draw = ImageDraw.Draw(im)
         ocr_font = ImageFont.truetype('citation/ocr_a_std.ttf', 22)
