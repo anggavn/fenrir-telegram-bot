@@ -102,9 +102,8 @@ ENV/
 
 # specific
 fenrirTG_venv/
+fenrirTG_venv_old/
 config.toml
-future_features.txt
+devnotes.txt
 *.sublime*
 *.bak
-atr_img.png
-dev.py

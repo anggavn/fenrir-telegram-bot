@@ -41,75 +41,74 @@ class Config():
         [TODO insert attributes]
     """
     def __init__(self, config_filename, ori_config_filename):
-        self.config_filename = config_filename
+        # self.config_filename = config_filename
 
         with open(config_filename, 'r') as config_file, \
              open(ori_config_filename, 'r') as ori_config_file:
             copy(config_filename, config_filename + '.bak')
             config_file.seek(0)
-            cf = toml.load(config_file)
-            ocf = toml.load(ori_config_file)
+            cfg = toml.load(config_file)
+            ori_cfg = toml.load(ori_config_file)
 
 
-            if cf['fenrir_version'] != ocf['fenrir_version']:
+            if cfg['fenrir_version'] != ori_cfg['fenrir_version']:
                 config_file.seek(0)
-                ncf = config_file.read().splitlines()
+                new_cfg = config_file.read().splitlines()
                 lineidx = 0
-                for line in ncf:
-                    if ncf[lineidx].find('fenrir_version') != -1:
-                        cmtidx = ncf[lineidx].find('#')  #preserving comments
+                for line in new_cfg:
+                    if new_cfg[lineidx].find('fenrir_version') != -1:
+                        cmtidx = new_cfg[lineidx].find('#')  #preserving comments
                         if cmtidx != -1:
-                            comment = ncf[lineidx][cmtidx:]
+                            comment = new_cfg[lineidx][cmtidx:]
                         else:
                             comment = ''
-                        ncf[lineidx] = toml.dumps({'fenrir_version': ocf['fenrir_version']})[0:-1] + '    ' + comment
+                        new_cfg[lineidx] = toml.dumps({'fenrir_version': ori_cfg['fenrir_version']})[0:-1] + '    ' + comment
                     lineidx = lineidx + 1
                 with open(config_filename, 'w') as new_config_file:
-                    new_config_file.write('\n'.join(ncf))
-                    print('// FENRIR v{} *NEWLY UPDATED*'.format(ocf['fenrir_version']))
+                    new_config_file.write('\n'.join(new_cfg))
+                    print('// FENRIR v{} *NEWLY UPDATED*'.format(ori_cfg['fenrir_version']))
             else:
-                print('// FENRIR v{}'.format(cf['fenrir_version']))
+                print('// FENRIR v{}'.format(cfg['fenrir_version']))
 
-            onlinecf = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
-            if ocf['fenrir_version'] != onlinecf['fenrir_version']:
-                print('// FENRIR v{} is available!'.format(onlinecf['fenrir_version']))
+            online_cfg = toml.loads(requests.get('https://raw.githubusercontent.com/AnTaRes27/fenrir-telegram-bot/master/default_config.toml').text)
+            if ori_cfg['fenrir_version'] != online_cfg['fenrir_version']:
+                print('// FENRIR v{} is available!'.format(online_cfg['fenrir_version']))
 
             #load credentials
-            self.bot_token = cf['credentials']['bot_token']
-            self.db_name = cf['credentials']['db_name']
-            self.db_uname = cf['credentials']['db_uname']
-
-            self.db_pass = cf['credentials']['db_pass']
+            self.bot_token = cfg['credentials']['bot_token']
+            self.db_name = cfg['credentials']['db_name']
+            self.db_uname = cfg['credentials']['db_uname']
+            self.db_pass = cfg['credentials']['db_pass']
 
             #initialise database
             self.db_conn = psycopg2.connect(dbname=self.db_name, \
                                             user=self.db_uname, \
                                             password=self.db_pass)
             self.db_curs = self.db_conn.cursor()
-            if cf['db_version'] != ocf['db_version']:
+            if cfg['db_version'] != ori_cfg['db_version']:
                 print('// NOTICE: DB out of date')
-                print('//         client version is ' + cf['db_version'])
-                print('//         latest version is ' + ocf['db_version'])
+                print('//         client version is ' + cfg['db_version'])
+                print('//         latest version is ' + ori_cfg['db_version'])
                 print('// updating database . . .')
                 self.build_database()
                 config_file.seek(0)
-                ncf = config_file.read().splitlines()
+                new_cfg = config_file.read().splitlines()
                 lineidx = 0
-                for line in ncf:
-                    if ncf[lineidx].find('db_version') != -1:
-                        cmtidx = ncf[lineidx].find('#')  #preserving comments
+                for line in new_cfg:
+                    if new_cfg[lineidx].find('db_version') != -1:
+                        cmtidx = new_cfg[lineidx].find('#')  #preserving comments
                         if cmtidx != -1:
-                            comment = ncf[lineidx][cmtidx:]
+                            comment = new_cfg[lineidx][cmtidx:]
                         else:
                             comment = ''
-                        ncf[lineidx] = toml.dumps({'db_version': ocf['db_version']})[0:-1] + '    ' + comment
+                        new_cfg[lineidx] = toml.dumps({'db_version': ori_cfg['db_version']})[0:-1] + '    ' + comment
                     lineidx = lineidx + 1
                 with open(config_filename, 'w') as new_config_file:
-                    new_config_file.write('\n'.join(ncf))
+                    new_config_file.write('\n'.join(new_cfg))
                 print('// update success!')
 
             #load bot owner
-            self.bot_owner = cf['owner']['owner_id']
+            self.bot_owner = cfg['owner']['owner_id']
             try:
                 for foo in self.bot_owner:
                     pass
@@ -119,13 +118,19 @@ class Config():
 
             #load bind and ban list
             try:
-                self.bot_mode = cf['settings']['chat_id_mode']
+                self.bot_mode = cfg['settings']['chat_id_mode']
             except:
                 self.bot_mode = None
-            self.bot_bind = cf['settings']['chat_id_bind']
-            self.bot_ban = cf['settings']['chat_id_ban']
+            self.bot_bind = cfg['settings']['chat_id_bind']
+            self.bot_ban = cfg['settings']['chat_id_ban']
 
     def build_database(self):
+        """[TODO summary of func]
+        args:
+            [TODO insert arguments]
+        returns:
+            [TODO insert returns]
+        """
         SQL = '''CREATE TABLE IF NOT EXISTS tguser(
                  id integer primary key)
                  ;'''
@@ -279,6 +284,26 @@ def owner_only(func):
     return wrapper
 
 
+def pm_only(func):
+    """[TODO summary of func]
+    args:
+        [TODO insert arguments]
+    returns:
+        [TODO insert returns]
+    """
+    async def wrapper(message: types.Message):
+        if message.chat.type == 'private':
+            await func(message)
+            # print('isgroup')
+            #TODO tell that an admin thing is performed
+        else:
+            # print('notgroup')
+            #TODO tell that an admin thing is denied
+            pass
+
+    return wrapper
+
+
 def group_only(func):
     """[TODO summary of func]
     args:
@@ -374,31 +399,40 @@ class CMD_handler:
 
     @group_only
     async def admin_ping(message: types.Message):
-        #TODO ping admins of a group
         #TODO make relevant database
         #TODO prevent duplicate reports
-        # group_id = message.chat.id
-        # invoker = message.from_user
 
-        group_name = message.chat.title
-
-        chat_link = await message.chat.get_url()
-        if message.reply_to_message != None:
-            problem_id = message.reply_to_message.message_id
+        try:
+            await fenrir_disp.throttle('admin_ping', rate=300, chat=message.chat.id)
+        except exceptions.Throttled:
+            await message.reply('Thank you for your concern, but a report has already been made. An admin will look into it shortly.')
         else:
-            problem_id = message.message_id
+            group_name = message.chat.title
+            if message.chat.type == 'private':
+                chat_link = f"tg://user?id={message.chat.id}"
+            elif message.chat.username:
+                chat_link = f"https://t.me/{message.chat.username}"
+            elif message.chat.invite_link:
+                chat_link = message.chat.invite_link
+            else:
+                chat_link = await message.chat.export_invite_link()
 
-        await message.reply(f'The admins have been notified with a report number #FNRPT{problem_id}')
+            if message.reply_to_message != None:
+                problem_id = f'{abs(message.chat.id)}{message.reply_to_message.message_id}'
+            else:
+                problem_id = f'{abs(message.chat.id)}{message.message_id}'
 
-        chatadmins = await message.chat.get_administrators()
-        admins = ''
-        adminct = 0
-        for admin in chatadmins:
-            if not admin.user.is_bot:
-                msg = f'Member of <a href="{chat_link}">{group_name}</a> pinged @admin. Report number is #FNRPT{problem_id}'
-                print(msg)
-                await fenrir.send_message(admin.user.id, msg, parse_mode='HTML')
-        pass
+            await message.reply(f'The admins have been notified with a report number #FNRPT{problem_id}')
+
+            chatadmins = await message.chat.get_administrators()
+            admins = ''
+            adminct = 0
+            for admin in chatadmins:
+                if not admin.user.is_bot:
+                    msg = f'Member of <a href="{chat_link}">{group_name}</a> pinged @admin. Report number is #FNRPT{problem_id}'
+                    print(msg)
+                    await fenrir.send_message(admin.user.id, msg, parse_mode='HTML')
+            pass
 
     @group_only
     async def rules(message: types.Message):
@@ -435,8 +469,13 @@ class CMD_handler:
     @group_only
     @admin_only
     async def getlink(message: types.Message):
-        chatlink = await message.chat.get_url()
-        if chatlink == None:
+        if message.chat.type == 'private':
+            chatlink = f"tg://user?id={message.chat.id}"
+        elif message.chat.username:
+            chatlink = f"https://t.me/{message.chat.username}"
+        elif message.chat.invite_link:
+            chatlink = message.chat.invite_link
+        else:
             chatlink = await message.chat.export_invite_link()
         invokerid = message.from_user.id
         await message.reply('Order received. Check your PM.')
@@ -859,12 +898,11 @@ async def cmd_msg_handler(message: types.Message):
                 # except:
                 #     pass
 
-    elif re.match(r'(\W|\A)@admin\b', message.text, re.I):  #calling admin
+    elif re.match(r'(\W|\A)@admin\b', message.text, re.I): #calling admin
         display_info_msg(message)
         await getattr(CMD_handler, 'admin_ping')(message)
-        #TODO pm admin
 
-    else:       #not command
+    else: #not command
         display_info_msg(message)
         txt = message.text.lower()
         await getattr(MSG_handler, txt)(message)
@@ -874,7 +912,7 @@ async def cmd_msg_handler(message: types.Message):
         # except:
         #     pass
 
-@fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO | types.message.ContentType.DOCUMENT)
+@fenrir_disp.message_handler(content_types=types.message.ContentType.PHOTO or types.message.ContentType.DOCUMENT)
 async def photo_handler(message: types.Message):
     display_info_photo(message)
     if message.caption != None:
@@ -882,7 +920,7 @@ async def photo_handler(message: types.Message):
         await cmd_msg_handler(message)
 
 @group_only
-@fenrir_disp.message_handler(content_types=types.message.ContentType.NEW_CHAT_MEMBERS | types.message.ContentType.LEFT_CHAT_MEMBER)
+@fenrir_disp.message_handler(content_types=types.message.ContentType.NEW_CHAT_MEMBERS or types.message.ContentType.LEFT_CHAT_MEMBER)
 async def greeter_handler(message: types.Message):
     new_chat_users = message.new_chat_members
     if new_chat_users != []:
