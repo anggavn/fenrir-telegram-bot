@@ -9,12 +9,13 @@ db_uname = ''
 db_pass = ''
 
 [owner]
-owner_id = ''
+owner_id = [
+    ]
 
 [settings]
 chat_id_mode = 'ban'    #'ban' or 'bind'
 chat_id_bind = [
     ]
 chat_id_ban = [
-]
+    ]
 welcome_message = 'hello! i am bot!'
